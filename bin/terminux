@@ -1,0 +1,49 @@
+#!/data/data/com.termux/files/usr/bin/bash
+# =============================================================================
+#  terminux -- control CLI for the Termux Linux desktop.
+#
+#  Installed as a symlink: $PREFIX/bin/terminux -> <checkout>/bin/terminux.
+#  Commands live in lib/<module>.sh as functions named cmd_<command>, loaded
+#  on demand. Library discovery is adapted from ternux (Apache-2.0); see NOTICE.
+# =============================================================================
+set -u
+
+_self="$(readlink -f "${BASH_SOURCE[0]}" 2>/dev/null || echo "${BASH_SOURCE[0]}")"
+TX_LIB="$(cd "$(dirname "$_self")/../lib" 2>/dev/null && pwd -P)"
+unset _self
+[ -f "${TX_LIB:-}/core.sh" ] || { echo "terminux: can't find lib/ next to bin/; reinstall." >&2; exit 1; }
+
+# shellcheck source=lib/core.sh
+. "$TX_LIB/core.sh"
+
+tx_use() {
+    # shellcheck source=/dev/null
+    . "$TX_LIB/$1.sh" || tx_die "internal error: module $1 is missing"
+}
+
+# command -> module. Adding a command = a cmd_<name> function plus a line here.
+_module_for() {
+    case "$1" in
+        info)                      echo info ;;
+        help)                      echo help ;;
+        *)                         return 1 ;;
+    esac
+}
+
+case "${1:-help}" in
+    -h|--help) set -- help ;;
+    -V|--version|version) echo "terminux $TERMINUX_VERSION"; exit 0 ;;
+esac
+
+cmd="${1:-help}"
+[ $# -gt 0 ] && shift
+[ "$cmd" = nb ] && cmd=netbird
+
+if ! module="$(_module_for "$cmd")"; then
+    tx_fail "unknown command: $cmd"
+    echo "Run 'terminux help' for the list of commands." >&2
+    exit 2
+fi
+
+tx_use "$module"
+"cmd_$cmd" "$@"
