@@ -36,6 +36,7 @@ _module_for() {
         ssh)                       echo ssh ;;
         info)                      echo info ;;
         doctor)                    echo doctor ;;
+        fix)                       echo fix ;;
         banner|login)              echo banner ;;
         help)                      echo help ;;
         *)                         return 1 ;;

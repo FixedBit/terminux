@@ -42,6 +42,7 @@ Network
 
 Health
   doctor              check for known problems and say how to fix each
+  fix [what]          repair them: launchers (default), phantom, all
   info                device and GPU profile
 
 Other
