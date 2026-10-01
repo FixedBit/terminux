@@ -39,7 +39,12 @@ wizard_values() {
 @test "install.sh accepts every value the wizard can emit and plans it" {
     while IFS=$'\t' read -r flag type value; do
         key="${flag#--}"
-        if [ "$type" = bool ]; then
+        if [ "$type" = bool-off ]; then
+            key="${key#no-}"
+            run bash "$REPO_ROOT/install.sh" --dry-run "$flag"
+            [ "$status" -eq 0 ] || { echo "$flag rejected: $output"; return 1; }
+            grep -qx "$key=no" <<<"$output" || { echo "$flag not in plan: $output"; return 1; }
+        elif [ "$type" = bool ]; then
             run bash "$REPO_ROOT/install.sh" --dry-run "$flag"
             [ "$status" -eq 0 ] || { echo "$flag rejected: $output"; return 1; }
             grep -qx "$key=yes" <<<"$output" || { echo "$flag not in plan: $output"; return 1; }

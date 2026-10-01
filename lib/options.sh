@@ -5,7 +5,7 @@
 # Mirrors options.json in plain bash, because a fresh phone has no jq.
 # tests/options.bats fails if the two disagree. See docs/adr/0005.
 
-# flag -> "type|allowed values|default"   (types: choice multi bool int list)
+# flag -> "type|allowed values|default"   (types: choice multi bool int list text)
 declare -gA TX_OPT_SPEC=(
     [de]="choice|xfce lxqt mate kde|xfce"
     [wine]="bool||no"
@@ -14,11 +14,15 @@ declare -gA TX_OPT_SPEC=(
     [tweaks]="multi|wakelock gpu-check phantom oneui-audio touch hidpi|wakelock,gpu-check,phantom,oneui-audio,touch,hidpi"
     [apps]="multi|vscode firefox chromium vlc gimp libreoffice python nodejs build|vscode,firefox,vlc,python"
     [packages]="list||"
-    [with]="multi|vscode-ms cursor netbird|"
+    [with]="multi|debian vscode-ms cursor netbird|"
     [ssh]="bool||no"
+    [user]='text|^[a-z_][a-z0-9_-]{0,31}$|user'
+    [shell]="choice|zsh bash|zsh"
+    [zsh]="multi|ohmyzsh powerlevel10k autosuggestions syntax-highlighting|ohmyzsh,powerlevel10k,autosuggestions,syntax-highlighting"
+    [banner]="bool||yes"
 )
 # Plan output order (matches options.json).
-TX_OPT_ORDER=(de wine theme dpi tweaks apps packages with ssh)
+TX_OPT_ORDER=(de wine theme dpi tweaks apps packages with ssh user shell zsh banner)
 
 TX_PKG_NAME_RE='^[a-z0-9][a-z0-9+._-]*$'
 
@@ -43,7 +47,8 @@ tx_opt_set() {
 
     case "$type" in
         bool)
-            TX_PLAN[$key]=yes ;;
+            # --no-<flag> arrives here as value "no".
+            TX_PLAN[$key]="${value:-yes}" ;;
         choice)
             [[ " $allowed " == *" $value "* ]] \
                 || { _tx_opt_bad "--$key: '$value' is not one of: $allowed"; return 2; }
@@ -57,6 +62,19 @@ tx_opt_set() {
                 [[ " $allowed " == *" $item "* ]] \
                     || { _tx_opt_bad "--$key: '$item' is not one of: $allowed"; return 2; }
             done
+            # Apps that need glibc run in the Debian environment.
+            if [ "$key" = with ] && [[ ",$value," =~ ,(vscode-ms|cursor), ]] \
+                && [[ ",$value," != *,debian,* ]]; then
+                value="debian,$value"
+            fi
+            TX_PLAN[$key]="$value" ;;
+        text)
+            [[ "$value" =~ $allowed ]] \
+                || { _tx_opt_bad "--$key: '$value' must match $allowed"; return 2; }
+            case "$value" in
+                root|nobody|daemon|bin|sys)
+                    _tx_opt_bad "--$key: '$value' is a system account"; return 2 ;;
+            esac
             TX_PLAN[$key]="$value" ;;
         int)
             local lo="${allowed%-*}" hi="${allowed#*-}"
@@ -90,7 +108,10 @@ tx_opt_help() {
         spec="${TX_OPT_SPEC[$k]}"
         type="${spec%%|*}"; allowed="${spec#*|}"; allowed="${allowed%|*}"; def="${spec##*|}"
         case "$type" in
-            bool)   printf '  --%-10s %s\n' "$k" "(flag)" ;;
+            bool)
+                if [ "$def" = yes ]; then printf '  --%-10s %s\n' "$k" "on by default; --no-$k turns it off"
+                else printf '  --%-10s %s\n' "$k" "(flag)"; fi ;;
+            text)   printf '  --%-10s %s (default: %s)\n' "$k" "name" "$def" ;;
             int)    printf '  --%-10s %s (default: %s)\n' "$k" "number $allowed" "$def" ;;
             list)   printf '  --%-10s %s\n' "$k" "comma-separated Termux package names" ;;
             *)      printf '  --%-10s %s (default: %s)\n' "$k" "${allowed// /|}" "${def:-none}" ;;

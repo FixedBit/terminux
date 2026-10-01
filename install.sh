@@ -68,6 +68,13 @@ while [ $# -gt 0 ]; do
         --private=*) TX_PRIVATE_SRC="${arg#*=}"; continue ;;
         --private) TX_PRIVATE_SRC="${1:-}"; shift; continue ;;
         --*=*) key="${arg%%=*}"; key="${key#--}"; value="${arg#*=}" ;;
+        --no-*)
+            key="${arg#--no-}"
+            if [ -n "${TX_OPT_SPEC[$key]:-}" ] && tx_opt_is_bool "$key"; then
+                value=no
+            else
+                tx_fail "unknown option: $arg"; exit 2
+            fi ;;
         --*)
             key="${arg#--}"
             if [ -n "${TX_OPT_SPEC[$key]:-}" ] && tx_opt_is_bool "$key"; then

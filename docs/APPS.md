@@ -48,5 +48,21 @@ native Termux install fails with `required file not found` or
 `libdl.so.2 not found`; terminux removes any such broken copy. Run it with:
 
 ```sh
-proot-distro login debian -- agent
+terminux debian -- agent
 ```
+
+## The Debian environment
+
+`--with debian` (or `terminux app debian`) installs a full Debian userland
+with [proot-distro](https://github.com/termux/proot-distro), and creates your
+account (`--user`) with passwordless `sudo`. It shares Termux's `/tmp`, so
+Linux apps inside it open on the same Termux:X11 display.
+
+```sh
+terminux debian              # a shell as your user
+terminux debian -- htop      # run one command
+```
+
+Inside, `apt` works as on any Debian machine. It's slower than native Termux
+because every system call goes through proot, so terminux only uses it for
+software that has no Termux build (Microsoft VS Code, Cursor).

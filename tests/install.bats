@@ -73,3 +73,25 @@ setup() { tx_sandbox; }
     [ "$status" -eq 0 ]
     grep -qx "tweaks=" <<<"$output"
 }
+
+@test "--user must be a valid Linux username" {
+    for bad in "Jason" "root user" "1abc" "a;b" "root"; do
+        run bash "$INSTALL" --dry-run --user "$bad"
+        [ "$status" -eq 2 ] || { echo "accepted bad user: $bad"; return 1; }
+    done
+    run bash "$INSTALL" --dry-run --user jason
+    [ "$status" -eq 0 ]
+    grep -qx "user=jason" <<<"$output"
+}
+
+@test "on-by-default switches are turned off with --no-<flag>" {
+    run bash "$INSTALL" --dry-run --no-banner
+    [ "$status" -eq 0 ]
+    grep -qx "banner=no" <<<"$output"
+}
+
+@test "vscode-ms and cursor bring in the Debian environment" {
+    run bash "$INSTALL" --dry-run --with cursor
+    [ "$status" -eq 0 ]
+    grep -qE "^with=(.*,)?debian(,.*)?$" <<<"$output"
+}

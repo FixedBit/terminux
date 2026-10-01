@@ -26,6 +26,11 @@
       "id": "network",
       "title": "Network and access",
       "doc": "docs/NETBIRD.md"
+    },
+    {
+      "id": "account",
+      "title": "Account and shell",
+      "doc": "docs/SHELL.md"
     }
   ],
   "options": [
@@ -225,9 +230,14 @@
       "default": [],
       "choices": [
         {
+          "value": "debian",
+          "label": "Debian environment",
+          "help": "A full Debian (proot) with your user account and sudo, for software that only exists for regular Linux. Enter it with terminux debian. About 1 GB."
+        },
+        {
           "value": "vscode-ms",
           "label": "Microsoft VS Code (in Debian proot)",
-          "help": "The official build with the Microsoft extension marketplace. Adds a Debian proot (about 1.5 GB)."
+          "help": "The official build with the Microsoft extension marketplace. Includes the Debian environment."
         },
         {
           "value": "cursor",
@@ -248,6 +258,82 @@
       "type": "bool",
       "label": "Start the SSH server on login (port 8022)",
       "default": false
+    },
+    {
+      "id": "user",
+      "flag": "--user",
+      "group": "account",
+      "type": "text",
+      "label": "Linux username",
+      "help": "Your account inside the Debian environment (with sudo). Lowercase letters, digits, - and _.",
+      "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+      "example": "jason",
+      "default": "user"
+    },
+    {
+      "id": "shell",
+      "flag": "--shell",
+      "group": "account",
+      "type": "choice",
+      "label": "Shell",
+      "default": "zsh",
+      "choices": [
+        {
+          "value": "zsh",
+          "label": "zsh",
+          "help": "With the extras below. Used in Termux and in Debian."
+        },
+        {
+          "value": "bash",
+          "label": "bash",
+          "help": "Termux's default."
+        }
+      ]
+    },
+    {
+      "id": "zsh",
+      "flag": "--zsh",
+      "group": "account",
+      "type": "multi",
+      "label": "zsh extras",
+      "help": "Only used with the zsh shell.",
+      "default": [
+        "ohmyzsh",
+        "powerlevel10k",
+        "autosuggestions",
+        "syntax-highlighting"
+      ],
+      "choices": [
+        {
+          "value": "ohmyzsh",
+          "label": "Oh My Zsh",
+          "help": "Framework for zsh themes and plugins."
+        },
+        {
+          "value": "powerlevel10k",
+          "label": "Powerlevel10k",
+          "help": "Fast, informative prompt. Run p10k configure to style it."
+        },
+        {
+          "value": "autosuggestions",
+          "label": "Autosuggestions",
+          "help": "Suggests commands from your history as you type."
+        },
+        {
+          "value": "syntax-highlighting",
+          "label": "Syntax highlighting",
+          "help": "Colours commands as you type, red if they don't exist."
+        }
+      ]
+    },
+    {
+      "id": "banner",
+      "flag": "--banner",
+      "group": "account",
+      "type": "bool",
+      "label": "Show the terminux banner when Termux opens",
+      "help": "Status and the main commands, every time you open Termux.",
+      "default": true
     }
   ]
 }
