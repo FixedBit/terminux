@@ -1,0 +1,17 @@
+# terminux app catalog: what `terminux add`, the wizard and install.sh can install.
+# One app per line, TAB-separated:
+#   id  category  target  method  spec  label  help
+# target: termux (native) | env (the Debian environment)
+# method: pkg | npm | pip | pipx | apt | script (https installer, run with bash) | vsx (Open VSX extensions for code-oss) | terminux (a terminux command)
+# tests/catalog.bats checks this file; options.json mirrors the categories the wizard shows.
+
+claude-code	ai	termux	npm	@anthropic-ai/claude-code	Claude Code	Anthropic's coding agent for the terminal. Run: claude
+codex	ai	termux	npm	@openai/codex	OpenAI Codex CLI	OpenAI's coding agent for the terminal. Run: codex
+gemini-cli	ai	termux	npm	@google/gemini-cli	Gemini CLI	Google's Gemini agent for the terminal. Run: gemini
+opencode	ai	termux	npm	opencode-ai	OpenCode	Open-source terminal coding agent that works with many model providers. Run: opencode
+graperoot	ai	termux	script	https://raw.githubusercontent.com/kunal12203/Codex-CLI-Compact/main/install.sh	GrapeRoot (Dual-Graph)	Graph-based context engine (MCP) that gives Claude Code, Codex, Gemini and others the right files with fewer tokens. Run: graperoot
+aider	ai	env	pipx	aider-chat	Aider	AI pair programming in your git repos. Installed in the Debian environment. Run: terminux debian -- aider
+cursor-agent	ai	env	terminux	app cursor	Cursor CLI	Cursor's agent CLI, in the Debian environment. Run: cursor-agent
+ollama	ai	termux	pkg	ollama	Ollama	Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b
+llama-cpp	ai	termux	pkg	llama-cpp	llama.cpp	Lightweight local inference for GGUF models (llama-cli, llama-server).
+vscode-ai	ai	termux	vsx	Continue.continue saoudrizwan.claude-dev	AI extensions for VS Code	Continue and Cline from Open VSX, for the native VS Code (code-oss).

@@ -23,6 +23,11 @@
       "doc": "docs/APPS.md"
     },
     {
+      "id": "ai",
+      "title": "AI tools",
+      "doc": "docs/APPS.md"
+    },
+    {
       "id": "network",
       "title": "Network and access",
       "doc": "docs/NETBIRD.md"
@@ -248,6 +253,67 @@
           "value": "netbird",
           "label": "NetBird mesh",
           "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page."
+        }
+      ]
+    },
+    {
+      "id": "ai",
+      "flag": "--ai",
+      "group": "ai",
+      "type": "multi",
+      "label": "AI tools",
+      "help": "Coding agents, local models and editor extensions. Add more later with: terminux add",
+      "default": [],
+      "choices": [
+        {
+          "value": "claude-code",
+          "label": "Claude Code",
+          "help": "Anthropic's coding agent for the terminal. Run: claude"
+        },
+        {
+          "value": "codex",
+          "label": "OpenAI Codex CLI",
+          "help": "OpenAI's coding agent for the terminal. Run: codex"
+        },
+        {
+          "value": "gemini-cli",
+          "label": "Gemini CLI",
+          "help": "Google's Gemini agent for the terminal. Run: gemini"
+        },
+        {
+          "value": "opencode",
+          "label": "OpenCode",
+          "help": "Open-source terminal coding agent that works with many model providers. Run: opencode"
+        },
+        {
+          "value": "graperoot",
+          "label": "GrapeRoot (Dual-Graph)",
+          "help": "Graph-based context engine (MCP) that gives Claude Code, Codex, Gemini and others the right files with fewer tokens. Run: graperoot"
+        },
+        {
+          "value": "aider",
+          "label": "Aider",
+          "help": "AI pair programming in your git repos. Installed in the Debian environment. Run: terminux debian -- aider"
+        },
+        {
+          "value": "cursor-agent",
+          "label": "Cursor CLI",
+          "help": "Cursor's agent CLI, in the Debian environment. Run: cursor-agent"
+        },
+        {
+          "value": "ollama",
+          "label": "Ollama",
+          "help": "Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b"
+        },
+        {
+          "value": "llama-cpp",
+          "label": "llama.cpp",
+          "help": "Lightweight local inference for GGUF models (llama-cli, llama-server)."
+        },
+        {
+          "value": "vscode-ai",
+          "label": "AI extensions for VS Code",
+          "help": "Continue and Cline from Open VSX, for the native VS Code (code-oss)."
         }
       ]
     },

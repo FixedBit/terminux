@@ -15,6 +15,7 @@ declare -gA TX_OPT_SPEC=(
     [apps]="multi|vscode firefox chromium vlc gimp libreoffice python nodejs build|vscode,firefox,vlc,python"
     [packages]="list||"
     [with]="multi|debian vscode-ms cursor netbird|"
+    [ai]="multi|$(awk -F'\t' '!/^#/ && $2 == "ai" { printf "%s ", $1 }' "$TX_LIB/../catalog.tsv" 2>/dev/null)|"
     [ssh]="bool||no"
     [user]='text|^[a-z_][a-z0-9_-]{0,31}$|user'
     [shell]="choice|zsh bash|zsh"
@@ -22,7 +23,7 @@ declare -gA TX_OPT_SPEC=(
     [banner]="bool||yes"
 )
 # Plan output order (matches options.json).
-TX_OPT_ORDER=(de wine theme dpi tweaks apps packages with ssh user shell zsh banner)
+TX_OPT_ORDER=(de wine theme dpi tweaks apps packages with ai ssh user shell zsh banner)
 
 TX_PKG_NAME_RE='^[a-z0-9][a-z0-9+._-]*$'
 

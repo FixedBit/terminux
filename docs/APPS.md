@@ -68,3 +68,27 @@ terminux debian -- htop      # run one command
 Inside, `apt` works as on any Debian machine. It's slower than native Termux
 because every system call goes through proot, so terminux only uses it for
 software that has no Termux build (Microsoft VS Code, Cursor).
+
+## AI tools (ai)
+
+Pick these in the wizard (`--ai`) or any time with `terminux add`.
+
+| Tool | Runs in | Start it with |
+|------|---------|---------------|
+| [Claude Code](https://docs.anthropic.com/en/docs/claude-code) | Termux | `claude` |
+| [OpenAI Codex CLI](https://github.com/openai/codex) | Termux | `codex` |
+| [Gemini CLI](https://github.com/google-gemini/gemini-cli) | Termux | `gemini` |
+| [OpenCode](https://opencode.ai) | Termux | `opencode` |
+| [GrapeRoot (Dual-Graph)](https://github.com/kunal12203/Codex-CLI-Compact) | Termux | `graperoot` |
+| [Aider](https://aider.chat) | Debian environment | `terminux debian -- aider` |
+| Cursor CLI | Debian environment | `cursor-agent` |
+| [Ollama](https://ollama.com) | Termux | `ollama serve`, then `ollama run llama3.2:1b` |
+| [llama.cpp](https://github.com/ggml-org/llama.cpp) | Termux | `llama-cli`, `llama-server` |
+| [Continue](https://continue.dev) and [Cline](https://cline.bot) | VS Code (code-oss) | the VS Code sidebar |
+
+The coding agents need an account or API key with their provider; each one
+asks the first time you run it. GrapeRoot's own installer asks a couple of
+questions and then works with whichever agents you have.
+
+Local models run on the phone's CPU. Small models (1–3B parameters) are
+usable on a recent flagship; larger ones are slow and need lots of free RAM.

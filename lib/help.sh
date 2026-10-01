@@ -19,7 +19,9 @@ Debian
   debian -- <cmd>     run one command in Debian
 
 Apps
-  app vscode          VS Code (Code - OSS, native, Open VSX extensions)
+  add                 pick apps to install from the catalog (AI tools, ...)
+  add <id> [id...]    install apps by id;  add --list [category] to browse
+  app vscode         VS Code (Code - OSS, native, Open VSX extensions)
   app vscode-ms       Microsoft VS Code, in Debian (run: code-ms)
   app cursor          Cursor CLI, in Debian (run: cursor-agent)
   app debian          install or update the Debian environment
