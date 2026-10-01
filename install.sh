@@ -92,4 +92,6 @@ if [ "$DRY_RUN" = 1 ]; then
     exit 0
 fi
 
-tx_die "Installing is not wired up yet; use --dry-run." 3
+# shellcheck source=lib/install.sh
+. "$TX_LIB/install.sh"
+tx_install_run
