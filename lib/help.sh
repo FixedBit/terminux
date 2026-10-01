@@ -12,6 +12,8 @@ Health
   info                device and GPU profile
 
 Other
+  banner [on|off]     show the banner, or turn it on/off at login
+  login               what runs when Termux opens (banner, sshd)
   version             print the version
 
 Docs: $TERMINUX_REPO_URL
