@@ -2,6 +2,7 @@
 # zsh, Oh My Zsh, Powerlevel10k and plugins really install and load.
 . /repo/tests/container/lib.sh
 prepare git
+# shellcheck disable=SC2034 # read by the sourced modules
 TX_LIB=/repo/lib; . /repo/lib/core.sh; . /repo/lib/shell.sh
 ln -sf /repo/bin/terminux "$PREFIX/bin/terminux"
 check "zsh setup" tx_shell_setup zsh ohmyzsh,powerlevel10k,autosuggestions,syntax-highlighting

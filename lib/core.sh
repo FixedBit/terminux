@@ -11,7 +11,10 @@
 [ -n "${_TX_CORE_LOADED:-}" ] && return 0
 _TX_CORE_LOADED=1
 
+# Used by the other modules and bin/terminux.
+# shellcheck disable=SC2034
 TERMINUX_VERSION="0.1.0"
+# shellcheck disable=SC2034
 TERMINUX_REPO_URL="https://github.com/FixedBit/terminux"
 
 # --- Paths --------------------------------------------------------------------

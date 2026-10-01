@@ -2,6 +2,7 @@
 # The real NetBird client under proot (needs ptrace: run on a native-arch image).
 . /repo/tests/container/lib.sh
 prepare proot curl ca-certificates
+# shellcheck disable=SC2034 # read by the sourced modules
 TX_LIB=/repo/lib; . /repo/lib/core.sh; . /repo/lib/netbird.sh
 check "NetBird downloads for $(uname -m)" tx_nb_install
 check "netbird version runs under proot" _tx_nb version

@@ -1,0 +1,50 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  test:
+    name: Lint and tests
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install bats, shellcheck and zsh
+        run: sudo apt-get update && sudo apt-get install -y bats shellcheck zsh
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+
+      - name: Syntax
+        run: |
+          for f in bin/terminux install.sh lib/*.sh setup/*.sh tools/*.sh tests/container/*.sh; do
+            bash -n "$f"
+          done
+
+      - name: ShellCheck
+        run: |
+          shellcheck -x -S warning --shell=bash bin/terminux install.sh lib/*.sh tools/*.sh tests/container/*.sh
+          # The inherited installer is checked at error level only.
+          shellcheck -S error --shell=bash setup/*.sh
+
+      - name: Wizard options match the catalog
+        run: node tools/sync-options.js --check
+
+      - name: Wizard tests
+        run: node --test site/tests/*.test.js
+
+      - name: Behaviour tests
+        run: bats tests/

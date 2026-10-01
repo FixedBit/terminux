@@ -39,7 +39,7 @@ cmd_dpi() {
 cmd_touch() {
     local state="$TERMINUX_STATE_DIR/touch-mode" mode="${1:-toggle}"
     if [ "$mode" = toggle ]; then
-        if [ "$(cat "$state" 2>/dev/null)" = touch ]; then mode=trackpad; else mode=touch; fi
+        if [ "$(cat "$state" 2>/dev/null)" = touch ]; then mode="trackpad"; else mode="touch"; fi
     fi
     mkdir -p "$TERMINUX_STATE_DIR"
     case "$mode" in

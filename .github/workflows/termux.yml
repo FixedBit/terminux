@@ -1,0 +1,32 @@
+name: Real Termux
+
+# Runs terminux inside real Termux (termux/termux-docker): the aarch64 image
+# for what can run under emulation, and the x86_64 image for anything that
+# uses proot, which needs ptrace that QEMU's user-mode emulation lacks.
+on:
+  push:
+    branches: [main]
+  pull_request:
+  schedule:
+    - cron: "17 6 * * 1"   # weekly: catch package renames in Termux's repos
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+jobs:
+  termux:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [smoke, packages, netbird, shell, debian]
+    steps:
+      - uses: actions/checkout@v4
+      - uses: docker/setup-qemu-action@v3
+        with:
+          platforms: arm64
+      - name: Run ${{ matrix.check }} in Termux
+        run: tools/container-test.sh ${{ matrix.check }}

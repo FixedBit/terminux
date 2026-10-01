@@ -2,6 +2,7 @@
 # A real Debian environment with a user (needs ptrace: native-arch image).
 . /repo/tests/container/lib.sh
 prepare proot-distro
+# shellcheck disable=SC2034 # read by the sourced modules
 TX_LIB=/repo/lib; . /repo/lib/core.sh; . /repo/lib/debian.sh
 check "Debian installs with user sam" tx_debian_install sam bash ""
 check "terminux debian runs a command as sam" bash -c "bash /repo/bin/terminux debian -- id -un | grep -qx sam"
