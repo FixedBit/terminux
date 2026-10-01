@@ -349,13 +349,23 @@ setup_environment() {
     echo -e "  ${WHITE}4) KDE Plasma${NC}  — Modern Windows-style UI. Requires 4 GB+ RAM."
     echo ""
 
-    while true; do
+    # Unattended: TERMINUX_DE=1-4 or xfce|lxqt|mate|kde skips the prompt.
+    case "${TERMINUX_DE:-}" in
+        1|xfce|xfce4) DE_INPUT=1 ;;
+        2|lxqt)       DE_INPUT=2 ;;
+        3|mate)       DE_INPUT=3 ;;
+        4|kde|plasma) DE_INPUT=4 ;;
+        *)            DE_INPUT="" ;;
+    esac
+    [ -n "$DE_INPUT" ] && DE_CHOICE="$DE_INPUT"
+    while [ -z "$DE_INPUT" ]; do
         read -rp "  Enter number (1-4) [default: 1]: " DE_INPUT
         DE_INPUT=${DE_INPUT:-1}
         if [[ "$DE_INPUT" =~ ^[1-4]$ ]]; then
             DE_CHOICE="$DE_INPUT"; break
         else
             echo -e "  ${RED}Invalid — enter 1, 2, 3, or 4.${NC}"
+            DE_INPUT=""
         fi
     done
 
@@ -372,13 +382,14 @@ setup_environment() {
     echo -e "${CYAN}Optional: Install Windows app support (Wine + Box64/Hangover)?${NC}"
     echo -e "  ${GRAY}Adds ~500 MB. Runs some Windows x86 apps on ARM.${NC}"
     echo ""
+    WINE_INPUT="${TERMINUX_WINE:-}"
     while true; do
-        read -rp "  Install Wine? (y/n) [default: n]: " WINE_INPUT
+        [ -n "$WINE_INPUT" ] || read -rp "  Install Wine? (y/n) [default: n]: " WINE_INPUT
         WINE_INPUT=${WINE_INPUT:-n}
         case "$WINE_INPUT" in
             [Yy]*) INSTALL_WINE="yes"; echo -e "  ${GREEN}✔ Wine will be installed.${NC}"; break;;
             [Nn]*) INSTALL_WINE="no";  echo -e "  ${GRAY}  Wine skipped.${NC}"; break;;
-            *) echo -e "  ${RED}Please enter y or n.${NC}";;
+            *) echo -e "  ${RED}Please enter y or n.${NC}"; WINE_INPUT="";;
         esac
     done
 
@@ -926,8 +937,9 @@ COMPLETE
     echo -e "  ${WHITE}Wine     : ${GREEN}${INSTALL_WINE}${NC}"
     echo ""
     echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
-    echo -e "  ${WHITE}▶  START DESKTOP:${NC}  ${GREEN}bash ~/start-linux.sh${NC}"
-    echo -e "  ${WHITE}■  STOP DESKTOP: ${NC}  ${GREEN}bash ~/stop-linux.sh${NC}"
+    echo -e "  ${WHITE}▶  START DESKTOP:${NC}  ${GREEN}terminux start${NC}   (or bash ~/start-linux.sh)"
+    echo -e "  ${WHITE}■  STOP DESKTOP: ${NC}  ${GREEN}terminux stop${NC}    (or bash ~/stop-linux.sh)"
+    echo -e "  ${WHITE}✚  HEALTH CHECK: ${NC}  ${GREEN}terminux doctor${NC}"
     echo -e "${YELLOW}  ─────────────────────────────────────────────────${NC}"
     echo ""
     echo -e "  ${CYAN}SSH into this device from another machine:${NC}"
@@ -987,4 +999,8 @@ main() {
     fi
 }
 
-main
+# Run only when executed, not when sourced -- tests source this file to
+# exercise step_launchers in a sandboxed $HOME.
+if [ "${BASH_SOURCE[0]}" = "$0" ]; then
+    main
+fi
