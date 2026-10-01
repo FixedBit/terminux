@@ -12,8 +12,8 @@ TX_DOC_FAILS=0
 TX_DOC_WARNS=0
 
 _doc_ok()   { tx_ok "$1"; }
-_doc_warn() { tx_warn "$1"; tx_hint "fix: $2"; TX_DOC_WARNS=$((TX_DOC_WARNS + 1)); }
-_doc_fail() { tx_fail "$1"; tx_hint "fix: $2"; TX_DOC_FAILS=$((TX_DOC_FAILS + 1)); }
+_doc_warn() { tx_warn "$1"; tx_hint "fix: $2" >&2; TX_DOC_WARNS=$((TX_DOC_WARNS + 1)); }
+_doc_fail() { tx_fail "$1"; tx_hint "fix: $2" >&2; TX_DOC_FAILS=$((TX_DOC_FAILS + 1)); }
 
 cmd_doctor() {
     TX_DOC_FAILS=0 TX_DOC_WARNS=0

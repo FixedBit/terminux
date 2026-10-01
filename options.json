@@ -108,7 +108,7 @@
       "group": "display",
       "type": "int",
       "label": "Desktop DPI",
-      "help": "Leave empty for automatic: 180 on a Galaxy Fold's inner screen, 96 elsewhere.",
+      "help": "Leave empty for automatic: the HiDPI tweak picks one from your screen (180 on a Galaxy Fold inner screen).",
       "min": 72,
       "max": 320,
       "default": null

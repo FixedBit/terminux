@@ -101,3 +101,30 @@ join() { bash "$TX" netbird join "$@"; }
     run bash "$TX" netbird status
     [[ "$output" == *"terminux netbird join"* ]]
 }
+
+@test "downloads the NetBird build for this CPU" {
+    stub curl 'echo "curl $*" >> "$CALLS"; case "$*" in
+        *api.github.com*) echo "  \"tag_name\": \"v0.80.0\"," ;;
+        *) while [ $# -gt 0 ]; do [ "$1" = -o ] && out="$2"; shift; done
+           d=$(mktemp -d); printf "#!/bin/sh\n" > "$d/netbird"; tar -czf "$out" -C "$d" netbird ;;
+        esac'
+    for pair in aarch64:arm64 x86_64:amd64 armv7l:armv6; do
+        stub uname "[ \"\$1\" = -m ] && echo ${pair%%:*}"
+        rm -rf "$NBH"; : > "$CALLS"
+        NB_SETUP_KEY=k bash "$TX" netbird join >/dev/null 2>&1 || true
+        grep -q "netbird_0.80.0_linux_${pair#*:}.tar.gz" "$CALLS" || { echo "wrong build for ${pair%%:*}"; cat "$CALLS"; return 1; }
+    done
+}
+
+@test "a daemon that started but never joined isn't reported as enrolled" {
+    mkdir -p "$NBH/lib"; echo '{}' > "$NBH/lib/config.json"
+    run bash "$TX" status
+    [[ "$output" == *"NetBird"*"not set up"* ]]
+}
+
+@test "after a successful join the phone counts as enrolled" {
+    NB_SETUP_KEY=k join
+    stub pgrep 'exit 1'
+    run bash "$TX" status
+    [[ "$output" == *"NetBird"*"enrolled"* ]]
+}

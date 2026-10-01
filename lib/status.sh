@@ -23,7 +23,9 @@ tx_debian_user() { tx_config_get user 2>/dev/null || echo user; }
 
 # not set up | enrolled, stopped | running
 tx_netbird_state() {
-    if [ ! -e "$TX_NB_HOME/lib/config.json" ] && [ ! -d "$TX_NB_HOME/lib/profiles" ]; then
+    # The client writes its config as soon as the daemon starts, so only a
+    # successful join (which leaves this marker) counts as enrolled.
+    if [ ! -e "$TX_NB_HOME/enrolled" ]; then
         echo "not set up"
     elif pgrep -f "$TX_NB_HOME/bin/netbird.* service run" >/dev/null 2>&1; then
         echo "running"

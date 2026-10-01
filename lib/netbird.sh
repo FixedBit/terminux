@@ -33,6 +33,17 @@ _tx_nb() { _tx_nb_argv; proot "${TX_NB_ARGV[@]}" "$@"; }
 
 _tx_nb_daemon_running() { pgrep -f "$TX_NB_BIN.* service run" >/dev/null 2>&1; }
 
+# NetBird's release name for this CPU.
+_tx_nb_arch() {
+    case "$(uname -m)" in
+        aarch64|arm64) echo arm64 ;;
+        x86_64|amd64)  echo amd64 ;;
+        armv7*|armv8l|arm*) echo armv6 ;;
+        i?86)          echo 386 ;;
+        *)             uname -m ;;
+    esac
+}
+
 tx_nb_install() {
     tx_has proot && tx_has curl || pkg install -y proot curl ca-certificates || return 1
     mkdir -p "$TX_NB_HOME"/{bin,lib,etc,run,log}
@@ -47,9 +58,9 @@ tx_nb_install() {
     fi
     tx_info "Downloading NetBird $ver"
     local tmp; tmp=$(mktemp -d)
-    # The linux arm64 release is a static Go binary, so it runs on Android.
+    # NetBird's linux builds are static Go binaries, so they run on Android.
     if curl -fsSL -o "$tmp/nb.tgz" \
-        "https://github.com/netbirdio/netbird/releases/download/v${ver}/netbird_${ver}_linux_arm64.tar.gz" \
+        "https://github.com/netbirdio/netbird/releases/download/v${ver}/netbird_${ver}_linux_$(_tx_nb_arch).tar.gz" \
         && tar -xzf "$tmp/nb.tgz" -C "$tmp" netbird; then
         install -m 755 "$tmp/netbird" "$TX_NB_BIN"
         echo "$ver" > "$TX_NB_HOME/bin/version"
@@ -119,6 +130,7 @@ tx_nb_join() {
     _tx_nb "${args[@]}"; rc=$?
     rm -f "$TX_NB_HOME/lib/$name"
     [ "$rc" -eq 0 ] || { tx_fail "netbird up failed; see: terminux netbird logs"; return 1; }
+    date -u +%Y-%m-%dT%H:%M:%SZ > "$TX_NB_HOME/enrolled"
     _tx_nb status
     tx_ok "This phone is on your NetBird mesh. The setup key isn't needed again."
 }

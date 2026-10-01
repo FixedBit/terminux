@@ -1,0 +1,81 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>terminux</title>
+<meta name="description" content="Set up a Linux desktop, VS Code, AI tools and more on your Android phone with Termux. Pick what you want, then paste one command.">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Atkinson+Hyperlegible+Next:wght@400;600;700&family=Martian+Mono:wght@400;600;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="assets/style.css">
+<link rel="icon" href="assets/icon.svg" type="image/svg+xml">
+</head>
+<body>
+<header class="top">
+  <a class="wordmark" href="./">terminux</a>
+  <nav aria-label="Site">
+    <a href="./" aria-current="page">Wizard</a>
+    <a href="docs.html">Docs</a>
+    <a href="https://github.com/FixedBit/terminux">GitHub</a>
+  </nav>
+</header>
+
+<main class="layout">
+  <section class="intro" aria-labelledby="title">
+    <h1 id="title">Linux on your phone, from one command.</h1>
+    <p class="lede">A full desktop, VS Code, AI coding tools and as many Linux
+      environments as you like, running in Termux on Android. No root.
+      Pick what you want below and paste the command into Termux.</p>
+    <ol class="steps">
+      <li><strong>Install Termux</strong> from
+        <a href="https://f-droid.org/packages/com.termux/">F-Droid</a> or
+        <a href="https://github.com/termux/termux-app/releases">GitHub</a>.
+        Not the Play Store version, which is outdated.</li>
+      <li><strong>Choose</strong> what to install below, or start from a preset.
+        Everything can be changed later.</li>
+      <li><strong>Copy the command</strong> and paste it into Termux. It installs
+        the Termux:X11 app for you and takes 20–40 minutes.</li>
+    </ol>
+  </section>
+
+  <form id="wizard" class="wizard" aria-label="Install options" novalidate>
+    <fieldset class="presets">
+      <legend>Start from</legend>
+      <div class="preset-row" id="presets"></div>
+    </fieldset>
+    <div id="groups"><p class="loading">Loading options…</p></div>
+  </form>
+
+  <aside class="terminal-wrap" aria-label="Your install command">
+    <div class="terminal" id="terminal">
+      <div class="term-bar">
+        <span class="term-title">Paste this into Termux</span>
+        <button type="button" id="copy" class="copy">Copy</button>
+      </div>
+      <pre class="term-body"><span class="prompt">~ $</span> <code id="command">curl -fsSL https://fixedbit.github.io/terminux/install.sh | bash</code></pre>
+      <div class="extra-keys" aria-hidden="true">
+        <span>ESC</span><span>/</span><span>-</span><span>HOME</span><span>↑</span><span>END</span><span>PGUP</span>
+        <span>TAB</span><span>CTRL</span><span>ALT</span><span>←</span><span>↓</span><span>→</span><span>PGDN</span>
+      </div>
+    </div>
+    <p class="secret-note">This page never asks for keys or passwords. If you
+      chose NetBird, the installer asks for your setup key on the phone, or see
+      <a href="docs.html?page=NETBIRD">how to pass it privately</a>.</p>
+    <p class="after">After it finishes, open Termux again and run
+      <code>terminux</code> for a menu, or <code>terminux start</code> for the desktop.</p>
+  </aside>
+</main>
+
+<footer class="foot">
+  <p>terminux is open source under the Apache 2.0 licence, built on
+    <a href="https://github.com/mayukh4/linux-android">linux-android</a>,
+    <a href="https://github.com/soobujmiah/ternux">ternux</a> and
+    <a href="docs.html?page=CREDITS">others</a>.</p>
+</footer>
+
+<div id="toast" class="toast" role="status" aria-live="polite"></div>
+<script src="assets/command.js"></script>
+<script src="assets/wizard.js"></script>
+</body>
+</html>

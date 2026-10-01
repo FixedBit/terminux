@@ -22,3 +22,4 @@ setup-key
 .claude/
 .dual-graph/
 *.stackdump
+_site/
