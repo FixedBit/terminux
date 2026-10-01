@@ -393,8 +393,8 @@ setup_environment() {
         esac
     done
 
-    TOTAL_STEPS=10
-    [ "$INSTALL_WINE" == "yes" ] && TOTAL_STEPS=11
+    TOTAL_STEPS=9
+    [ "$INSTALL_WINE" == "yes" ] && TOTAL_STEPS=10
 
     log "DE=$DE_NAME, GPU=$GPU_DRIVER, Wine=$INSTALL_WINE"
     sleep 1
@@ -578,29 +578,44 @@ step_audio() {
 }
 
 # ============== STEP 7: APPS ==============
+# Termux packages behind each app id offered by options.json ("apps").
+# tests/options.bats fails if the wizard offers an app missing here.
+app_packages() {
+    case "$1" in
+        vscode)      echo "code-oss" ;;
+        firefox)     echo "firefox" ;;
+        chromium)    echo "chromium" ;;
+        vlc)         echo "vlc" ;;
+        gimp)        echo "gimp" ;;
+        libreoffice) echo "libreoffice" ;;
+        python)      echo "python python-pip" ;;
+        nodejs)      echo "nodejs" ;;
+        build)       echo "clang make cmake pkg-config" ;;
+        *)           return 1 ;;
+    esac
+}
+
 step_apps() {
     update_progress
     echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Installing applications...${NC}"
     echo ""
-    safe_install_pkg "firefox"  "Firefox Browser"
-    safe_install_pkg "vlc"      "VLC Media Player"
+    # Base tools every install gets.
     safe_install_pkg "git"      "Git Version Control"
     safe_install_pkg "wget"     "Wget"
     safe_install_pkg "curl"     "cURL"
     safe_install_pkg "openssh"  "OpenSSH (SSH server + client)"
-    # Microsoft's VS Code builds (code.visualstudio.com) are glibc binaries and
-    # fail on Termux with "required file not found". code-oss is the same
-    # editor built natively for Termux, using the Open VSX extension store.
-    safe_install_pkg "code-oss" "VS Code (Code - OSS)"
-}
 
-# ============== STEP 8: PYTHON ==============
-step_python() {
-    update_progress
-    echo -e "${PURPLE}[Step ${CURRENT_STEP}/${TOTAL_STEPS}] Installing Python...${NC}"
-    echo ""
-    safe_install_pkg "python"     "Python 3"
-    safe_install_pkg "python-pip" "pip (Python Package Manager)"
+    # Chosen apps (install.sh --apps). VS Code is code-oss: Microsoft's own
+    # builds are glibc binaries and fail on Termux ("required file not found").
+    local app pkg
+    local -a apps
+    IFS=',' read -ra apps <<< "${TERMINUX_APPS:-vscode,firefox,vlc,python}"
+    for app in "${apps[@]}"; do
+        [ -n "$app" ] || continue
+        for pkg in $(app_packages "$app"); do
+            safe_install_pkg "$pkg" "$pkg ($app)"
+        done
+    done
 }
 
 # ============== STEP 9 (OPTIONAL): WINE ==============
@@ -857,7 +872,7 @@ step_shortcuts() {
 
     mkdir -p ~/Desktop
 
-    cat > ~/Desktop/Firefox.desktop << 'EOF'
+    command -v firefox >/dev/null 2>&1 && cat > ~/Desktop/Firefox.desktop << 'EOF'
 [Desktop Entry]
 Name=Firefox
 Exec=firefox
@@ -879,7 +894,7 @@ Categories=Development;IDE;TextEditor;
 EOF
     fi
 
-    cat > ~/Desktop/VLC.desktop << 'EOF'
+    command -v vlc >/dev/null 2>&1 && cat > ~/Desktop/VLC.desktop << 'EOF'
 [Desktop Entry]
 Name=VLC Media Player
 Exec=vlc
@@ -985,7 +1000,6 @@ main() {
     step_gpu
     step_audio
     step_apps
-    step_python
 
     [ "$INSTALL_WINE" == "yes" ] && step_wine
 

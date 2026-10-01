@@ -30,4 +30,5 @@ stub() {
     printf '#!/usr/bin/env bash\n%s\n' "$2" > "$BATS_TEST_TMPDIR/stubs/$1"
     chmod +x "$BATS_TEST_TMPDIR/stubs/$1"
     case ":$PATH:" in *":$BATS_TEST_TMPDIR/stubs:"*) ;; *) PATH="$BATS_TEST_TMPDIR/stubs:$PATH" ;; esac
+    return 0
 }

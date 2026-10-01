@@ -80,3 +80,41 @@ setup() { tx_sandbox; }
     [ "$output" = 0 ]
     grep -qE '^# export LINUX_DPI=' "$HOME/.config/linux-gpu.sh"
 }
+
+# Run step_shortcuts with only the given commands on PATH.
+shortcuts_with() {
+    local cmd
+    for cmd in "$@"; do stub "$cmd" 'exit 0'; done
+    (
+        cd "$HOME" || exit 1
+        # shellcheck source=/dev/null
+        . "$SETUP"
+        TERMUX_PREFIX="$PREFIX" DE_CHOICE=1 INSTALL_WINE=no
+        update_progress() { :; }
+        PATH="$BATS_TEST_TMPDIR/stubs:/usr/bin:/bin"
+        step_shortcuts >/dev/null || true
+    )
+}
+
+@test "desktop shortcuts are created only for installed apps" {
+    shortcuts_with firefox
+    [ -f "$HOME/Desktop/Firefox.desktop" ]
+    [ ! -f "$HOME/Desktop/VLC.desktop" ]
+    [ ! -f "$HOME/Desktop/VSCode.desktop" ]
+    [ -f "$HOME/Desktop/Terminal.desktop" ]
+}
+
+@test "TERMINUX_APPS chooses what step_apps installs, on top of the base tools" {
+    stub pkg 'exit 0'
+    run bash -c "
+        . '$SETUP'
+        safe_install_pkg() { echo \"\$1\"; }
+        update_progress() { :; }
+        TERMINUX_APPS=vscode,build step_apps"
+    [ "$status" -eq 0 ]
+    for p in git curl openssh code-oss clang cmake; do
+        grep -qx "$p" <<<"$output" || { echo "missing $p"; return 1; }
+    done
+    run grep -cxE 'firefox|vlc' <<<"$output"
+    [ "$output" = 0 ]
+}
