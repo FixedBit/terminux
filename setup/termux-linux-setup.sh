@@ -453,6 +453,10 @@ step_desktop() {
     # needs a session bus to reach its settings daemon. Without it XFCE greets
     # you with "Unable to contact settings server". (issue #5)
     safe_install_pkg "dbus" "D-Bus (session message bus)"
+    # xrdb applies HiDPI scaling; vulkaninfo lets the launcher check that
+    # Turnip actually supports this GPU before forcing Zink on every app.
+    safe_install_pkg "xorg-xrdb"    "xrdb (HiDPI scaling)"
+    safe_install_pkg "vulkan-tools" "vulkaninfo (GPU self-test)"
 
     case $DE_CHOICE in
         1)
@@ -573,6 +577,10 @@ step_apps() {
     safe_install_pkg "wget"     "Wget"
     safe_install_pkg "curl"     "cURL"
     safe_install_pkg "openssh"  "OpenSSH (SSH server + client)"
+    # Microsoft's VS Code builds (code.visualstudio.com) are glibc binaries and
+    # fail on Termux with "required file not found". code-oss is the same
+    # editor built natively for Termux, using the Open VSX extension store.
+    safe_install_pkg "code-oss" "VS Code (Code - OSS)"
 }
 
 # ============== STEP 8: PYTHON ==============
@@ -641,9 +649,25 @@ export ZINK_DESCRIPTORS=lazy
 EOF
 
     if [ "$DE_CHOICE" == "4" ]; then
-        echo "export KWIN_COMPOSE=O2ES" >> ~/.config/linux-gpu.sh
+        # KWin can't get a GLES context on Termux-X11 and exits with
+        # "Could not fulfill the requested compositing mode", leaving windows
+        # without title bars. Default to no compositing; set KWIN_GL=1 before
+        # running setup to try GPU compositing via Zink instead.
+        if [ "${KWIN_GL:-0}" == "1" ]; then
+            echo "export KWIN_COMPOSE=O" >> ~/.config/linux-gpu.sh
+        else
+            echo "export KWIN_COMPOSE=N" >> ~/.config/linux-gpu.sh
+        fi
     else
         echo -e "$XDG_INJECT" >> ~/.config/linux-gpu.sh
+    fi
+
+    # HiDPI default. Galaxy Z Fold models are SM-F9xx; their inner screen is
+    # ~370 ppi, so 96 DPI in native mode makes everything unreadably small.
+    if [[ "$DEVICE_MODEL" == SM-F9* ]]; then
+        echo "export LINUX_DPI=180   # Galaxy Fold inner screen; try 160-200" >> ~/.config/linux-gpu.sh
+    else
+        echo "# export LINUX_DPI=160   # uncomment for HiDPI scaling" >> ~/.config/linux-gpu.sh
     fi
 
     if [ "$GPU_DRIVER" == "freedreno" ]; then
@@ -680,7 +704,10 @@ PLANKEOF
             KILL_CMD="pkill -9 mate-session 2>/dev/null; pkill -9 plank 2>/dev/null"
             ;;
         4)
-            EXEC_CMD="(sleep 5 && pkill -9 plasmashell && plasmashell) >/dev/null 2>&1 &\nexec startplasma-x11"
+            # A literal \n is not expanded inside the launcher heredoc, so the old
+            # value produced "... &\nexec startplasma-x11" -> "nexec: command not found".
+            EXEC_CMD="(sleep 5 && pkill -9 plasmashell && plasmashell) >/dev/null 2>&1 &
+exec startplasma-x11"
             KILL_CMD="pkill -9 startplasma-x11 2>/dev/null; pkill -9 kwin_x11 2>/dev/null"
             ;;
     esac
@@ -693,10 +720,28 @@ echo ""
 
 source ~/.config/linux-gpu.sh 2>/dev/null
 
+# Samsung's battery manager suspends Termux in the background, which freezes
+# the desktop when you switch to the Termux-X11 app. Hold a wake lock.
+command -v termux-wake-lock >/dev/null 2>&1 && termux-wake-lock
+
+# GPU self-test. Brand-new Adreno GPUs can ship before Turnip supports them;
+# forcing Zink then makes apps and KWin crash. Fall back to software rendering.
+if [ -n "\${MESA_LOADER_DRIVER_OVERRIDE:-}" ] && command -v vulkaninfo >/dev/null 2>&1; then
+    if ! vulkaninfo --summary 2>/dev/null | grep -qiE "turnip|adreno"; then
+        echo "[!] Turnip doesn't support this GPU yet -- using software rendering."
+        unset GALLIUM_DRIVER MESA_LOADER_DRIVER_OVERRIDE VK_ICD_FILENAMES
+        export KWIN_COMPOSE=N
+    fi
+fi
+
 echo "[*] Cleaning up old sessions..."
 pkill -9 -f "termux.x11" 2>/dev/null || true
 ${KILL_CMD} || true
 pkill -9 -f "dbus-daemon" 2>/dev/null || true
+# A killed X server leaves its lock and socket behind; the next start then
+# reports "X server already running on display :0" and shows a black screen.
+rm -f "${TERMUX_PREFIX}/tmp/.X0-lock" 2>/dev/null || true
+rm -rf "${TERMUX_PREFIX}/tmp/.X11-unix" 2>/dev/null || true
 sleep 0.5
 
 # ---- D-Bus session bus ----
@@ -745,6 +790,24 @@ export DISPLAY=:0
 # bus's environment, not this shell's -- so push DISPLAY across explicitly.
 dbus-update-activation-environment DISPLAY XAUTHORITY PULSE_SERVER XDG_DATA_DIRS XDG_CONFIG_DIRS XDG_RUNTIME_DIR >/dev/null 2>&1 || true
 
+# Optional HiDPI scaling (e.g. Galaxy Fold inner screen in native mode).
+# Set LINUX_DPI in ~/.config/linux-gpu.sh, e.g. export LINUX_DPI=180
+if [ -n "\${LINUX_DPI:-}" ]; then
+    command -v xrdb >/dev/null 2>&1 && echo "Xft.dpi: \$LINUX_DPI" | xrdb -merge
+    # KDE reads its own font DPI setting
+    for kw in kwriteconfig6 kwriteconfig5; do
+        command -v \$kw >/dev/null 2>&1 && \$kw --file kcmfontsrc --group General --key forceFontDPI "\$LINUX_DPI" && break
+    done
+    # XFCE overrides Xft.dpi from xfconf once xfsettingsd is up, and its
+    # default window borders are too thin to grab on a touchscreen.
+    if command -v xfconf-query >/dev/null 2>&1; then
+        ( sleep 8
+          xfconf-query -c xsettings -p /Xft/DPI -n -t int -s "\$LINUX_DPI"
+          xfconf-query -c xfwm4 -p /general/theme -n -t string -s Default-xhdpi
+        ) >/dev/null 2>&1 &
+    fi
+fi
+
 echo ""
 echo "─────────────────────────────────────────────────"
 echo "  ✔ Desktop launching! Open the Termux-X11 app."
@@ -763,9 +826,12 @@ pkill -9 -f "termux.x11" 2>/dev/null || true
 pkill -9 -f "pulseaudio"  2>/dev/null || true
 ${KILL_CMD} || true
 pkill -9 -f "dbus-daemon" 2>/dev/null || true
+rm -f "${TERMUX_PREFIX}/tmp/.X0-lock" 2>/dev/null || true
+rm -rf "${TERMUX_PREFIX}/tmp/.X11-unix" 2>/dev/null || true
 # Leave no dead socket for the next start to trip over.
 rm -f "${TERMUX_PREFIX}/var/run/dbus/session_bus_socket" 2>/dev/null || true
 rm -rf "\$HOME/.dbus" 2>/dev/null || true
+command -v termux-wake-unlock >/dev/null 2>&1 && termux-wake-unlock
 echo "[✔] Desktop stopped."
 STOPEOF
     chmod +x ~/stop-linux.sh
@@ -788,6 +854,19 @@ Icon=firefox
 Type=Application
 Categories=Network;WebBrowser;
 EOF
+
+    if command -v code-oss >/dev/null 2>&1; then
+        # Electron's sandbox needs setuid, which Android doesn't allow, and its
+        # GPU process is unreliable on Zink -- an editor doesn't need either.
+        cat > ~/Desktop/VSCode.desktop << 'EOF'
+[Desktop Entry]
+Name=VS Code
+Exec=code-oss --no-sandbox --disable-gpu %F
+Icon=code-oss
+Type=Application
+Categories=Development;IDE;TextEditor;
+EOF
+    fi
 
     cat > ~/Desktop/VLC.desktop << 'EOF'
 [Desktop Entry]
@@ -856,6 +935,14 @@ COMPLETE
     echo -e "    2. Set a password:    ${GREEN}passwd${NC}"
     echo -e "    3. Find your IP:      ${GREEN}ip addr show wlan0 | grep 'inet '${NC}"
     echo -e "    4. Connect from PC:   ${GREEN}ssh \$(whoami)@<your-ip> -p 8022${NC}"
+    echo ""
+    echo -e "  ${YELLOW}Android 12+ (incl. One UI) kills Termux child processes (\"signal 9\").${NC}"
+    echo -e "    Developer options -> ${GREEN}Disable child process restrictions${NC} -> On"
+    echo -e "    (older builds: ${GREEN}adb shell settings put global settings_enable_monitor_phantom_procs false${NC})"
+    echo ""
+    echo -e "  ${CYAN}Sharpest display:${NC} with Termux-X11 open, run"
+    echo -e "    ${GREEN}termux-x11-preference displayResolutionMode:native fullscreen:true hideCutout:true${NC}"
+    echo -e "    Scale is set by LINUX_DPI in ${GREEN}~/.config/linux-gpu.sh${NC}"
     echo ""
     echo -e "  ${GRAY}Full install log: $LOG_FILE${NC}"
     echo ""
