@@ -14,6 +14,10 @@ Desktop
   restart             stop, then start
   status              what's running
 
+Debian
+  debian              a shell in Debian as your user
+  debian -- <cmd>     run one command in Debian
+
 Health
   info                device and GPU profile
 

@@ -35,12 +35,15 @@ _tx_clone() {
 }
 
 # tx_shell_setup <zsh|bash> <comma-separated zsh extras>
+# TX_SHELL_GUEST=1: running as a user inside Debian, where root has already
+# installed zsh and set the login shell, and there's no Termux font to set.
 tx_shell_setup() {
     local shell="$1" extras=",${2:-},"
     tx_rc_block "$HOME/.bashrc"
     [ "$shell" = zsh ] || return 0
 
-    pkg install -y zsh git curl >/dev/null || tx_warn "couldn't install zsh"
+    local guest="${TX_SHELL_GUEST:-0}"
+    [ "$guest" = 1 ] || pkg install -y zsh git curl >/dev/null || tx_warn "couldn't install zsh"
     local has_omz=0 custom
     [[ "$extras" == *,ohmyzsh,* ]] && has_omz=1
 
@@ -67,7 +70,7 @@ tx_shell_setup() {
     tx_rc_block "$HOME/.zshrc"
 
     # Powerlevel10k's icons need a Nerd Font; Termux reads ~/.termux/font.ttf.
-    if [[ "$extras" == *,powerlevel10k,* ]] && [ ! -e "$HOME/.termux/font.ttf" ]; then
+    if [ "$guest" != 1 ] && [[ "$extras" == *,powerlevel10k,* ]] && [ ! -e "$HOME/.termux/font.ttf" ]; then
         mkdir -p "$HOME/.termux"
         if curl -fsSL -o "$HOME/.termux/font.ttf" "$TX_P10K_FONT_URL"; then
             tx_has termux-reload-settings && termux-reload-settings
@@ -77,6 +80,7 @@ tx_shell_setup() {
         fi
     fi
 
+    [ "$guest" = 1 ] && return 0
     chsh -s zsh 2>/dev/null || tx_warn "couldn't make zsh the default shell; run: chsh -s zsh"
 }
 
