@@ -17,4 +17,6 @@ All notable changes to this project are documented here. The format follows
 ### Added
 - VS Code (`code-oss`) in the default install, with a desktop shortcut.
 - Phantom-process-killer and Termux-X11 display hints on the completion screen.
-- Repository scaffold: licensing and attribution for the upstream projects.
+- Apache-2.0 licence, NOTICE and CREDITS for the projects terminux builds on.
+- Architecture overview, decision records and a development guide in `docs/`.
+- `terminux` CLI with `info` and `help`.
