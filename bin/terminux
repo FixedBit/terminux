@@ -29,6 +29,7 @@ _module_for() {
         menu)                      echo menu ;;
         debian)                    echo debian ;;
         app)                       echo apps ;;
+        netbird)                   echo netbird ;;
         info)                      echo info ;;
         banner|login)              echo banner ;;
         help)                      echo help ;;

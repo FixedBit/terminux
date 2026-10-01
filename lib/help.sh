@@ -24,6 +24,10 @@ Apps
   app cursor          Cursor CLI, in Debian (run: cursor-agent)
   app debian          install or update the Debian environment
 
+Network
+  netbird join        join a NetBird mesh (asks for the setup key)
+  netbird [cmd]       status | start | stop | down | logs | boot
+
 Health
   info                device and GPU profile
 
