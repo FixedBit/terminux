@@ -28,6 +28,7 @@ _module_for() {
         start|stop|restart|status) echo desktop ;;
         menu)                      echo menu ;;
         debian)                    echo debian ;;
+        env)                       echo env ;;
         app)                       echo apps ;;
         add)                       echo catalog ;;
         netbird)                   echo netbird ;;

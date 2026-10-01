@@ -14,9 +14,13 @@ Desktop
   restart             stop, then start
   status              what's running
 
-Debian
+Environments
   debian              a shell in Debian as your user
   debian -- <cmd>     run one command in Debian
+  env                 pick an environment and what to do with it
+  env list            your environments;  env profiles: what you can make
+  env create <name> --from <profile>
+  env enter|run|rename|backup|reset|remove <name>
 
 Apps
   add                 pick apps to install from the catalog (AI tools, ...)

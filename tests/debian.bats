@@ -76,3 +76,14 @@ setup() {
     [ "$status" -ne 0 ]
     [[ "$output" == *"terminux app debian"* ]]
 }
+
+@test "Debian is found in proot-distro v4's layout too (containers/debian/rootfs)" {
+    mkdir -p "$PREFIX/var/lib/proot-distro/containers/debian/rootfs/etc"
+    mkdir -p "$HOME/.config/terminux"; echo user=jason > "$HOME/.config/terminux/config"
+    run bash "$TX" debian
+    [ "$status" -eq 0 ]
+    tx_debian_install jason bash ""
+    run grep -c "^proot-distro|install" "$CALLS"
+    [ "$output" = 0 ]
+    [ -f "$PREFIX/var/lib/proot-distro/containers/debian/rootfs/etc/profile.d/terminux.sh" ]
+}

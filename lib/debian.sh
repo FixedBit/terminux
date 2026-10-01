@@ -45,8 +45,9 @@ tx_debian_install() {
     # Linux apps started from Debian show up on the Termux:X11 display and
     # play sound through Termux's PulseAudio (the desktop launcher loads its
     # TCP module).
-    mkdir -p "$TX_DEBIAN_ROOTFS/etc/profile.d"
-    cat > "$TX_DEBIAN_ROOTFS/etc/profile.d/terminux.sh" <<'EOF'
+    local rootfs; rootfs=$(tx_debian_rootfs) || { tx_fail "Can't find Debian's files after installing it"; return 1; }
+    mkdir -p "$rootfs/etc/profile.d"
+    cat > "$rootfs/etc/profile.d/terminux.sh" <<'EOF'
 # Written by terminux.
 export DISPLAY=:0
 export PULSE_SERVER=127.0.0.1

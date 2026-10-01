@@ -63,7 +63,7 @@ _tx_app_vscode_ms() {
         DEBIAN_FRONTEND=noninteractive apt-get install -y ./code.deb
         rm -f code.deb
     " || { tx_fail "Installing VS Code in Debian failed"; return 1; }
-    tx_vscode_argv "$TX_DEBIAN_ROOTFS/home/$user/.vscode/argv.json"
+    tx_vscode_argv "$(tx_debian_rootfs)/home/$user/.vscode/argv.json"
 
     cat > "$PREFIX/bin/code-ms" <<'EOF'
 #!/data/data/com.termux/files/usr/bin/bash
