@@ -3,7 +3,12 @@
 #   id  category  target  method  spec  label  help
 # target: termux (native) | env (the Debian environment)
 # method: pkg | npm | pip | pipx | apt | script (https installer, run with bash) | vsx (Open VSX extensions for code-oss) | terminux (a terminux command)
-# tests/catalog.bats checks this file; options.json mirrors the categories the wizard shows.
+# tests/catalog.bats checks this file. After editing, run: node tools/sync-options.js
+# Category titles, in the order the wizard and `terminux add` show them:
+#@category	ai	AI tools
+#@category	dev	Development
+#@category	media	Media
+#@category	net	Network and sync
 
 claude-code	ai	termux	npm	@anthropic-ai/claude-code	Claude Code	Anthropic's coding agent for the terminal. Run: claude
 codex	ai	termux	npm	@openai/codex	OpenAI Codex CLI	OpenAI's coding agent for the terminal. Run: codex
@@ -15,3 +20,20 @@ cursor-agent	ai	env	terminux	app cursor	Cursor CLI	Cursor's agent CLI, in the De
 ollama	ai	termux	pkg	ollama	Ollama	Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b
 llama-cpp	ai	termux	pkg	llama-cpp	llama.cpp	Lightweight local inference for GGUF models (llama-cli, llama-server).
 vscode-ai	ai	termux	vsx	Continue.continue saoudrizwan.claude-dev	AI extensions for VS Code	Continue and Cline from Open VSX, for the native VS Code (code-oss).
+cli-essentials	dev	termux	pkg	fzf ripgrep fd bat eza jq htop	CLI essentials	fzf, ripgrep, fd, bat, eza, jq and htop.
+neovim	dev	termux	pkg	neovim	Neovim	The modal editor. Run: nvim
+tmux	dev	termux	pkg	tmux	tmux	Terminal multiplexer: keep sessions running, split panes.
+gh	dev	termux	pkg	gh	GitHub CLI	Pull requests, issues and auth from the terminal. Run: gh auth login
+lazygit	dev	termux	pkg	lazygit	lazygit	A friendly terminal UI for git.
+golang	dev	termux	pkg	golang	Go	The Go toolchain.
+rust	dev	termux	pkg	rust	Rust	rustc and cargo.
+java	dev	termux	pkg	openjdk-21	Java (OpenJDK 21)	JDK for Java and Kotlin tooling.
+ffmpeg	media	termux	pkg	ffmpeg	FFmpeg	Convert and edit audio and video from the terminal.
+yt-dlp	media	termux	pip	yt-dlp	yt-dlp	Download video and audio from sites you have rights to.
+mpv	media	termux	pkg	mpv-x	mpv	Lightweight video player for the desktop.
+inkscape	media	termux	pkg	inkscape	Inkscape	Vector graphics editor.
+audacity	media	termux	pkg	audacity	Audacity	Audio editor.
+netbird	net	termux	terminux	netbird join	NetBird mesh	Join a NetBird network without root. Asks for the setup key.
+rclone	net	termux	pkg	rclone	rclone	Sync files with Google Drive, Dropbox, S3 and more.
+syncthing	net	termux	pkg	syncthing	Syncthing	Peer-to-peer folder sync between your devices.
+openssh-server	net	termux	terminux	ssh on	SSH server	Start sshd (port 8022) whenever Termux opens.

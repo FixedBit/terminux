@@ -92,3 +92,36 @@ questions and then works with whichever agents you have.
 
 Local models run on the phone's CPU. Small models (1–3B parameters) are
 usable on a recent flagship; larger ones are slow and need lots of free RAM.
+
+## Development (dev)
+
+| App | id | |
+|-----|----|-|
+| CLI essentials | `cli-essentials` | fzf, ripgrep, fd, bat, eza, jq, htop |
+| Neovim | `neovim` | `nvim` |
+| tmux | `tmux` | keep sessions alive, split panes |
+| GitHub CLI | `gh` | `gh auth login` first |
+| lazygit | `lazygit` | terminal UI for git |
+| Go, Rust, Java | `golang`, `rust`, `java` | native toolchains |
+
+For a whole separate development box, see [environments](ENVIRONMENTS.md)
+(`terminux env create work --from dev`).
+
+## Media (media)
+
+| App | id | |
+|-----|----|-|
+| FFmpeg | `ffmpeg` | convert and edit audio/video |
+| yt-dlp | `yt-dlp` | download media you have rights to |
+| mpv | `mpv` | video player |
+| Inkscape | `inkscape` | vector graphics |
+| Audacity | `audacity` | audio editor |
+
+## Network and sync (net)
+
+| App | id | |
+|-----|----|-|
+| NetBird mesh | `netbird` | [NetBird](NETBIRD.md), same as `terminux netbird join` |
+| rclone | `rclone` | sync with Google Drive, Dropbox, S3, … |
+| Syncthing | `syncthing` | sync folders between your devices |
+| SSH server | `openssh-server` | start `sshd` on port 8022 whenever Termux opens (`terminux ssh on`) |

@@ -23,9 +23,14 @@
       "doc": "docs/APPS.md"
     },
     {
-      "id": "ai",
-      "title": "AI tools",
+      "id": "extras",
+      "title": "AI tools and more apps",
       "doc": "docs/APPS.md"
+    },
+    {
+      "id": "envs",
+      "title": "Extra environments",
+      "doc": "docs/ENVIRONMENTS.md"
     },
     {
       "id": "network",
@@ -257,63 +262,256 @@
       ]
     },
     {
-      "id": "ai",
-      "flag": "--ai",
-      "group": "ai",
+      "id": "add",
+      "flag": "--add",
+      "group": "extras",
       "type": "multi",
-      "label": "AI tools",
-      "help": "Coding agents, local models and editor extensions. Add more later with: terminux add",
+      "label": "Apps from the catalog",
+      "help": "Anything here can also be added later with: terminux add",
       "default": [],
+      "categories": [
+        {
+          "id": "ai",
+          "title": "AI tools"
+        },
+        {
+          "id": "dev",
+          "title": "Development"
+        },
+        {
+          "id": "media",
+          "title": "Media"
+        },
+        {
+          "id": "net",
+          "title": "Network and sync"
+        }
+      ],
       "choices": [
         {
           "value": "claude-code",
           "label": "Claude Code",
-          "help": "Anthropic's coding agent for the terminal. Run: claude"
+          "help": "Anthropic's coding agent for the terminal. Run: claude",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "codex",
           "label": "OpenAI Codex CLI",
-          "help": "OpenAI's coding agent for the terminal. Run: codex"
+          "help": "OpenAI's coding agent for the terminal. Run: codex",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "gemini-cli",
           "label": "Gemini CLI",
-          "help": "Google's Gemini agent for the terminal. Run: gemini"
+          "help": "Google's Gemini agent for the terminal. Run: gemini",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "opencode",
           "label": "OpenCode",
-          "help": "Open-source terminal coding agent that works with many model providers. Run: opencode"
+          "help": "Open-source terminal coding agent that works with many model providers. Run: opencode",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "graperoot",
           "label": "GrapeRoot (Dual-Graph)",
-          "help": "Graph-based context engine (MCP) that gives Claude Code, Codex, Gemini and others the right files with fewer tokens. Run: graperoot"
+          "help": "Graph-based context engine (MCP) that gives Claude Code, Codex, Gemini and others the right files with fewer tokens. Run: graperoot",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "aider",
           "label": "Aider",
-          "help": "AI pair programming in your git repos. Installed in the Debian environment. Run: terminux debian -- aider"
+          "help": "AI pair programming in your git repos. Installed in the Debian environment. Run: terminux debian -- aider",
+          "category": "ai",
+          "target": "env"
         },
         {
           "value": "cursor-agent",
           "label": "Cursor CLI",
-          "help": "Cursor's agent CLI, in the Debian environment. Run: cursor-agent"
+          "help": "Cursor's agent CLI, in the Debian environment. Run: cursor-agent",
+          "category": "ai",
+          "target": "env"
         },
         {
           "value": "ollama",
           "label": "Ollama",
-          "help": "Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b"
+          "help": "Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "llama-cpp",
           "label": "llama.cpp",
-          "help": "Lightweight local inference for GGUF models (llama-cli, llama-server)."
+          "help": "Lightweight local inference for GGUF models (llama-cli, llama-server).",
+          "category": "ai",
+          "target": "termux"
         },
         {
           "value": "vscode-ai",
           "label": "AI extensions for VS Code",
-          "help": "Continue and Cline from Open VSX, for the native VS Code (code-oss)."
+          "help": "Continue and Cline from Open VSX, for the native VS Code (code-oss).",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "cli-essentials",
+          "label": "CLI essentials",
+          "help": "fzf, ripgrep, fd, bat, eza, jq and htop.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "neovim",
+          "label": "Neovim",
+          "help": "The modal editor. Run: nvim",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "tmux",
+          "label": "tmux",
+          "help": "Terminal multiplexer: keep sessions running, split panes.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "gh",
+          "label": "GitHub CLI",
+          "help": "Pull requests, issues and auth from the terminal. Run: gh auth login",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "lazygit",
+          "label": "lazygit",
+          "help": "A friendly terminal UI for git.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "golang",
+          "label": "Go",
+          "help": "The Go toolchain.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "rust",
+          "label": "Rust",
+          "help": "rustc and cargo.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "java",
+          "label": "Java (OpenJDK 21)",
+          "help": "JDK for Java and Kotlin tooling.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "ffmpeg",
+          "label": "FFmpeg",
+          "help": "Convert and edit audio and video from the terminal.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "yt-dlp",
+          "label": "yt-dlp",
+          "help": "Download video and audio from sites you have rights to.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "mpv",
+          "label": "mpv",
+          "help": "Lightweight video player for the desktop.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "inkscape",
+          "label": "Inkscape",
+          "help": "Vector graphics editor.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "audacity",
+          "label": "Audacity",
+          "help": "Audio editor.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "netbird",
+          "label": "NetBird mesh",
+          "help": "Join a NetBird network without root. Asks for the setup key.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "rclone",
+          "label": "rclone",
+          "help": "Sync files with Google Drive, Dropbox, S3 and more.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "syncthing",
+          "label": "Syncthing",
+          "help": "Peer-to-peer folder sync between your devices.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "openssh-server",
+          "label": "SSH server",
+          "help": "Start sshd (port 8022) whenever Termux opens.",
+          "category": "net",
+          "target": "termux"
+        }
+      ]
+    },
+    {
+      "id": "envs",
+      "flag": "--envs",
+      "group": "envs",
+      "type": "multi",
+      "label": "Environments to create",
+      "help": "Each becomes a proot environment named after its profile. Make more later with: terminux env create",
+      "default": [],
+      "choices": [
+        {
+          "value": "desktop",
+          "label": "desktop",
+          "help": "Debian with an XFCE desktop and Firefox, for the Termux:X11 display"
+        },
+        {
+          "value": "dev",
+          "label": "dev",
+          "help": "Debian with build tools, git, Python, Node.js and Go"
+        },
+        {
+          "value": "gaming",
+          "label": "gaming",
+          "help": "Debian with RetroArch, DOSBox and ScummVM"
+        },
+        {
+          "value": "minimal",
+          "label": "minimal",
+          "help": "Alpine Linux with just a shell, curl and git (about 20 MB)"
+        },
+        {
+          "value": "security",
+          "label": "security",
+          "help": "Kali Linux (official image) with its standard command-line toolset, for authorized security testing"
         }
       ]
     },

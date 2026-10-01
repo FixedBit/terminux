@@ -7,13 +7,16 @@
 
 TX_CATALOG="${TX_CATALOG:-$TX_LIB/../catalog.tsv}"
 
-declare -gA TX_CATEGORY_NAMES=(
-    [ai]="AI tools"
-)
+# Category titles come from the "#@category<TAB>id<TAB>title" lines.
+declare -gA TX_CATEGORY_NAMES=()
+while IFS=$'\t' read -r _ _id _title; do
+    TX_CATEGORY_NAMES[$_id]="$_title"
+done < <(grep '^#@category' "$TX_CATALOG")
+unset _id _title
 
 _tx_cat_rows() { grep -vE '^(#|$)' "$TX_CATALOG"; }
 
-_tx_cat_categories() { _tx_cat_rows | cut -f2 | awk '!seen[$0]++'; }
+_tx_cat_categories() { grep '^#@category' "$TX_CATALOG" | cut -f2; }
 
 # Print the catalog row for an id.
 _tx_cat_row() { _tx_cat_rows | awk -F'\t' -v id="$1" '$1 == id { print; exit }'; }

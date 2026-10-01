@@ -14,7 +14,7 @@ rows() { grep -vE '^(#|$)' "$CAT"; }
 
 @test "the catalog exists and every category has entries" {
     [ -f "$CAT" ]
-    for c in ai; do
+    for c in ai dev media net; do
         [ "$(rows | awk -F'	' -v c="$c" '$2 == c' | wc -l)" -gt 0 ] || { echo "no $c entries"; return 1; }
     done
 }
@@ -54,11 +54,27 @@ rows() { grep -vE '^(#|$)' "$CAT"; }
     done
 }
 
-@test "the wizard's --ai choices are exactly the catalog's ai category" {
-    want=$(rows | awk -F'\t' '$2 == "ai" { print $1 }' | sort)
-    run node -e 'for (const c of require(process.argv[1]).options.find(o => o.id === "ai").choices) console.log(c.value)' "$REPO_ROOT/options.json"
+@test "options.json is in sync with the catalog (tools/sync-options.js --check)" {
+    run node "$REPO_ROOT/tools/sync-options.js" --check
     [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+}
+
+@test "the wizard's --add choices are the whole catalog, each tagged with its category" {
+    run node -e '
+        const o = require(process.argv[1]).options.find(o => o.id === "add");
+        for (const c of o.choices) console.log(c.value + "	" + c.category);' "$REPO_ROOT/options.json"
+    [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+    want=$(rows | awk -F'	' '{ print $1 "	" $2 }' | sort)
     got=$(sort <<<"$output")
     [ -n "$want" ]
     [ "$want" = "$got" ] || { diff <(echo "$want") <(echo "$got"); return 1; }
+}
+
+@test "catalog entries that run terminux commands name real commands" {
+    while IFS=$'\t' read -r id cat target method spec label help; do
+        [ "$method" = terminux ] || continue
+        cmd="${spec%% *}"
+        run bash "$TX" "$cmd" --help-probe
+        [[ "$output" != *"unknown command"* ]] || { echo "$id: terminux $cmd doesn't exist"; return 1; }
+    done < <(rows)
 }

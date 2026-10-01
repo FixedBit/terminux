@@ -95,3 +95,19 @@ setup() { tx_sandbox; }
     [ "$status" -eq 0 ]
     grep -qE "^with=(.*,)?debian(,.*)?$" <<<"$output"
 }
+
+@test "--add takes any catalog id" {
+    run bash "$INSTALL" --dry-run --add claude-code,neovim
+    [ "$status" -eq 0 ]
+    grep -qx "add=claude-code,neovim" <<<"$output"
+    run bash "$INSTALL" --dry-run --add not-a-thing
+    [ "$status" -eq 2 ]
+}
+
+@test "--envs takes environment profiles" {
+    run bash "$INSTALL" --dry-run --envs dev,minimal
+    [ "$status" -eq 0 ]
+    grep -qx "envs=dev,minimal" <<<"$output"
+    run bash "$INSTALL" --dry-run --envs nope
+    [ "$status" -eq 2 ]
+}

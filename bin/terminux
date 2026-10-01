@@ -32,6 +32,7 @@ _module_for() {
         app)                       echo apps ;;
         add)                       echo catalog ;;
         netbird)                   echo netbird ;;
+        ssh)                       echo ssh ;;
         info)                      echo info ;;
         banner|login)              echo banner ;;
         help)                      echo help ;;

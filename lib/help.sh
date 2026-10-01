@@ -33,6 +33,7 @@ Apps
 Network
   netbird join        join a NetBird mesh (asks for the setup key)
   netbird [cmd]       status | start | stop | down | logs | boot
+  ssh on|off          SSH server on port 8022, started when Termux opens
 
 Health
   info                device and GPU profile
