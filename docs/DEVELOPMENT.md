@@ -5,22 +5,38 @@ conventions the code follows.
 
 ## Running the tests
 
-You don't need a phone. Every test runs in a throwaway `$HOME` and `$PREFIX`,
-with Android commands (`getprop`, `pkg`, `termux-x11`, `proot-distro`, …)
-replaced by stubs.
+You don't need a phone for most of it.
+
+**Behaviour tests** run in a throwaway `$HOME` and `$PREFIX`, with Android
+commands (`getprop`, `pkg`, `termux-x11`, `proot-distro`, ...) replaced by
+stubs. Run them on Linux (on Windows, inside WSL; Git Bash works but skips a
+few tests that need glibc).
 
 ```sh
-# one-time: bats-core and shellcheck
 git clone --depth 1 https://github.com/bats-core/bats-core.git ~/bats-core
-pip install shellcheck-py          # or your package manager's shellcheck
-
-~/bats-core/bin/bats tests/        # behaviour
-shellcheck -x bin/terminux lib/*.sh install.sh
-node --test site/tests/            # the wizard's command builder
+~/bats-core/bin/bats tests/
+node --test site/tests/*.test.js     # the wizard's command builder
+node tools/sync-options.js --check   # options.json matches catalog.tsv and envs/
+shellcheck -x -S warning --shell=bash bin/terminux install.sh lib/*.sh tools/*.sh
 ```
 
-CI runs the same commands on every push and pull request
-(`.github/workflows/ci.yml`).
+**Real Termux** runs terminux inside
+[termux-docker](https://github.com/termux/termux-docker):
+
+```sh
+docker run --rm --privileged aptman/qus -s -- -p aarch64   # once, on x86 machines
+tools/container-test.sh                  # all: smoke packages netbird shell debian
+tools/container-test.sh netbird          # one
+```
+
+`smoke` and `packages` run on the aarch64 image, the phone's CPU under
+emulation. Anything using proot runs on the x86_64 image, because QEMU's
+user-mode emulation has no `ptrace`, which proot needs. Termux has no `/tmp`;
+use `$TMPDIR` in container checks.
+
+**Preview the site** with `tools/build-site.sh && python3 -m http.server -d _site`.
+
+CI runs all of this on every push and pull request.
 
 ## Adding a feature (test first)
 
@@ -38,7 +54,9 @@ line in `_module_for` in `bin/terminux`. `tests/cli.bats` fails if help
 advertises a command that no module defines.
 
 A new install option starts in `options.json`; see
-[ADR 0005](adr/0005-options-schema.md).
+[ADR 0005](adr/0005-options-schema.md). A new app is one line in
+`catalog.tsv` followed by `node tools/sync-options.js`; a new environment
+profile is a file in `envs/`.
 
 ## Conventions
 
