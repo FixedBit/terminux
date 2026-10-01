@@ -1,5 +1,6 @@
 # shellcheck shell=bash
 # terminux -- `terminux info`: device and GPU profile.
+# SPDX-License-Identifier: Apache-2.0
 
 # shellcheck source=lib/detect.sh
 . "$TX_LIB/detect.sh"

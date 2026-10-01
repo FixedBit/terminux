@@ -3,7 +3,8 @@
 #  terminux -- device detection.
 #
 #  Adapted from ternux lib/detect.sh (https://github.com/soobujmiah/ternux,
-#  Apache-2.0, (c) 2026 Sobuj Miah); modified for terminux. See NOTICE.
+#  (c) 2026 Sobuj Miah), modified.
+#  SPDX-License-Identifier: Apache-2.0
 # =============================================================================
 
 tx_detect_model()   { tx_getprop ro.product.model; }

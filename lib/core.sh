@@ -4,8 +4,8 @@
 #  Every other module sources this first.
 #
 #  Output helpers and the module layout are adapted from ternux
-#  (https://github.com/soobujmiah/ternux, Apache-2.0, (c) 2026 Sobuj Miah);
-#  modified for terminux. See NOTICE.
+#  (https://github.com/soobujmiah/ternux, (c) 2026 Sobuj Miah), modified.
+#  SPDX-License-Identifier: Apache-2.0
 # =============================================================================
 
 [ -n "${_TX_CORE_LOADED:-}" ] && return 0

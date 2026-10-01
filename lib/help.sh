@@ -1,5 +1,6 @@
 # shellcheck shell=bash
 # terminux -- usage text.
+# SPDX-License-Identifier: Apache-2.0
 
 cmd_help() {
     cat <<EOF

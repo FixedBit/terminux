@@ -1,18 +1,23 @@
 terminux
-Copyright (c) 2026 FixedBit
+Copyright 2026 FixedBit
 
-terminux is MIT licensed (see LICENSE), and builds on two upstream projects:
+Licensed under the Apache License, Version 2.0 (see LICENSE).
 
-1. linux-android by Mayukh Bagchi -- MIT License
-   https://github.com/mayukh4/linux-android (imported at commit fb63e0d)
-   setup/termux-linux-setup.sh and setup/setup-homeassistant.sh started as
-   copies of that project's scripts and have since been modified here.
-   License text: LICENSES/linux-android-MIT.txt
+This product includes software from the following projects:
 
-2. ternux by Sobuj Miah -- Apache License 2.0
-   https://github.com/soobujmiah/ternux
-   The CLI layout (bin/ + lib/ modules, library discovery, the doctor command
-   and device detection helpers) is adapted from ternux. Files containing
-   adapted code say so in their header and remain under Apache-2.0 for those
-   portions; they have been modified for terminux.
-   License text: LICENSES/Apache-2.0.txt, upstream NOTICE: LICENSES/ternux-NOTICE.txt
+linux-android
+  Copyright (c) 2026 Mayukh Bagchi
+  https://github.com/mayukh4/linux-android -- MIT License
+  setup/termux-linux-setup.sh and setup/setup-homeassistant.sh were imported
+  from commit fb63e0d and have been modified. The MIT license text is in
+  LICENSES/linux-android-MIT.txt.
+
+ternux
+  Copyright (c) 2026 Sobuj Miah (@soobujmiah)
+  https://github.com/soobujmiah/ternux -- Apache License 2.0
+  The CLI layout (bin/ + lib/ modules) and the device detection and output
+  helpers in lib/core.sh and lib/detect.sh are adapted from ternux and have
+  been modified. Its NOTICE is reproduced in LICENSES/ternux-NOTICE.txt.
+
+Other projects that informed terminux without contributing code are credited
+in CREDITS.md.

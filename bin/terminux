@@ -4,7 +4,8 @@
 #
 #  Installed as a symlink: $PREFIX/bin/terminux -> <checkout>/bin/terminux.
 #  Commands live in lib/<module>.sh as functions named cmd_<command>, loaded
-#  on demand. Library discovery is adapted from ternux (Apache-2.0); see NOTICE.
+#  on demand. The bin/ + lib/ layout is adapted from ternux; see NOTICE.
+#  SPDX-License-Identifier: Apache-2.0
 # =============================================================================
 set -u
 
