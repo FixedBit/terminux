@@ -48,8 +48,10 @@ native Termux install fails with `required file not found` or
 `libdl.so.2 not found`; terminux removes any such broken copy. Run it with:
 
 ```sh
-terminux debian -- agent
+cursor-agent
 ```
+
+Microsoft VS Code likewise gets a `code-ms` command and a desktop shortcut.
 
 ## The Debian environment
 
