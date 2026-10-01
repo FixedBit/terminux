@@ -21,3 +21,4 @@ setup-key
 # Local agent tooling
 .claude/
 .dual-graph/
+*.stackdump

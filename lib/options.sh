@@ -11,13 +11,14 @@ declare -gA TX_OPT_SPEC=(
     [wine]="bool||no"
     [theme]="choice|dark light|dark"
     [dpi]="int|72-320|auto"
+    [tweaks]="multi|wakelock gpu-check phantom oneui-audio touch hidpi|wakelock,gpu-check,phantom,oneui-audio,touch,hidpi"
     [apps]="multi|vscode firefox chromium vlc gimp libreoffice python nodejs build|vscode,firefox,vlc,python"
     [packages]="list||"
     [with]="multi|vscode-ms cursor netbird|"
     [ssh]="bool||no"
 )
 # Plan output order (matches options.json).
-TX_OPT_ORDER=(de wine theme dpi apps packages with ssh)
+TX_OPT_ORDER=(de wine theme dpi tweaks apps packages with ssh)
 
 TX_PKG_NAME_RE='^[a-z0-9][a-z0-9+._-]*$'
 
@@ -48,6 +49,8 @@ tx_opt_set() {
                 || { _tx_opt_bad "--$key: '$value' is not one of: $allowed"; return 2; }
             TX_PLAN[$key]="$value" ;;
         multi)
+            # "none" is how the wizard says "all unchecked".
+            [ "$value" = none ] && { TX_PLAN[$key]=""; return 0; }
             local -a items
             IFS=',' read -ra items <<< "$value"
             for item in "${items[@]}"; do

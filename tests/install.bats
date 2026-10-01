@@ -67,3 +67,9 @@ setup() { tx_sandbox; }
         [[ "$output" == *"$flag"* ]] || { echo "help lacks $flag"; return 1; }
     done
 }
+
+@test "a multi option set to 'none' plans an empty list" {
+    run bash "$INSTALL" --dry-run --tweaks none
+    [ "$status" -eq 0 ]
+    grep -qx "tweaks=" <<<"$output"
+}

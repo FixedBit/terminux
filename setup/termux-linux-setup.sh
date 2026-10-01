@@ -312,6 +312,7 @@ setup_environment() {
     echo ""
 
     DEVICE_MODEL=$(getprop ro.product.model 2>/dev/null || echo "Unknown")
+    DEVICE_DENSITY=$(getprop ro.sf.lcd_density 2>/dev/null || echo "")
     DEVICE_BRAND=$(getprop ro.product.brand 2>/dev/null || echo "Unknown")
     ANDROID_VERSION=$(getprop ro.build.version.release 2>/dev/null || echo "Unknown")
     CPU_ABI=$(getprop ro.product.cpu.abi 2>/dev/null || echo "arm64-v8a")
@@ -688,10 +689,38 @@ EOF
         echo -e "$XDG_INJECT" >> ~/.config/linux-gpu.sh
     fi
 
-    # HiDPI default. Galaxy Z Fold models are SM-F9xx; their inner screen is
-    # ~370 ppi, so 96 DPI in native mode makes everything unreadably small.
-    if [[ "$DEVICE_MODEL" == SM-F9* ]]; then
+    # Device tweaks from install.sh --tweaks. Unset means all on; set but
+    # empty means none.
+    local tweaks=",${TERMINUX_TWEAKS-wakelock,gpu-check,phantom,oneui-audio,touch,hidpi},"
+    has_tweak() { [[ "$tweaks" == *",$1,"* ]]; }
+    local t var
+    for t in wakelock:WAKELOCK gpu-check:GPU_CHECK oneui-audio:ONEUI_AUDIO touch:TOUCH; do
+        var="TERMINUX_${t#*:}"
+        if has_tweak "${t%%:*}"; then echo "export $var=1"; else echo "export $var=0"; fi
+    done >> ~/.config/linux-gpu.sh
+
+    # Theme (install.sh --theme): GTK_THEME reaches every GTK app on any
+    # desktop; the launcher also sets XFCE's own theme name from it.
+    case "${TERMINUX_THEME:-dark}" in
+        light) echo "export GTK_THEME=Adwaita" >> ~/.config/linux-gpu.sh
+               echo "export TERMINUX_GTK_THEME_NAME=Adwaita" >> ~/.config/linux-gpu.sh ;;
+        *)     echo "export GTK_THEME=Adwaita:dark" >> ~/.config/linux-gpu.sh
+               echo "export TERMINUX_GTK_THEME_NAME=Adwaita-dark" >> ~/.config/linux-gpu.sh ;;
+    esac
+
+    # HiDPI. In native mode Termux-X11 runs at the panel's real resolution,
+    # and at X's default 96 DPI everything is unreadably small. An explicit
+    # --dpi wins; otherwise the hidpi tweak picks one: 180 for a Galaxy Z Fold
+    # inner screen (SM-F9xx), or 40% of Android's own density on other
+    # high-density screens (480 -> 192).
+    local density="${DEVICE_DENSITY:-0}"
+    [[ "$density" =~ ^[0-9]+$ ]] || density=0
+    if [ -n "${TERMINUX_DPI:-}" ]; then
+        echo "export LINUX_DPI=${TERMINUX_DPI}   # set at install" >> ~/.config/linux-gpu.sh
+    elif has_tweak hidpi && [[ "$DEVICE_MODEL" == SM-F9* ]]; then
         echo "export LINUX_DPI=180   # Galaxy Fold inner screen; try 160-200" >> ~/.config/linux-gpu.sh
+    elif has_tweak hidpi && [ "$density" -ge 400 ]; then
+        echo "export LINUX_DPI=$(( density * 2 / 5 ))   # from screen density $density" >> ~/.config/linux-gpu.sh
     else
         echo "# export LINUX_DPI=160   # uncomment for HiDPI scaling" >> ~/.config/linux-gpu.sh
     fi
@@ -748,11 +777,13 @@ source ~/.config/linux-gpu.sh 2>/dev/null
 
 # Samsung's battery manager suspends Termux in the background, which freezes
 # the desktop when you switch to the Termux-X11 app. Hold a wake lock.
-command -v termux-wake-lock >/dev/null 2>&1 && termux-wake-lock
+if [ "\${TERMINUX_WAKELOCK:-1}" = 1 ] && command -v termux-wake-lock >/dev/null 2>&1; then
+    termux-wake-lock
+fi
 
 # GPU self-test. Brand-new Adreno GPUs can ship before Turnip supports them;
 # forcing Zink then makes apps and KWin crash. Fall back to software rendering.
-if [ -n "\${MESA_LOADER_DRIVER_OVERRIDE:-}" ] && command -v vulkaninfo >/dev/null 2>&1; then
+if [ "\${TERMINUX_GPU_CHECK:-1}" = 1 ] && [ -n "\${MESA_LOADER_DRIVER_OVERRIDE:-}" ] && command -v vulkaninfo >/dev/null 2>&1; then
     if ! vulkaninfo --summary 2>/dev/null | grep -qiE "turnip|adreno"; then
         echo "[!] Turnip doesn't support this GPU yet -- using software rendering."
         unset GALLIUM_DRIVER MESA_LOADER_DRIVER_OVERRIDE VK_ICD_FILENAMES
@@ -802,7 +833,14 @@ echo "[*] Starting PulseAudio..."
 unset PULSE_SERVER
 pulseaudio --kill 2>/dev/null || true
 sleep 0.3
-pulseaudio --start --exit-idle-time=-1
+# One UI's audio stack makes PulseAudio fail to start unless libskcodec is
+# preloaded (termux-packages #19623). Other phones don't have the library.
+ONEUI_AUDIO_LIB="\${TERMINUX_ONEUI_AUDIO_LIB:-/system/lib64/libskcodec.so}"
+if [ "\${TERMINUX_ONEUI_AUDIO:-1}" = 1 ] && [ -f "\$ONEUI_AUDIO_LIB" ]; then
+    LD_PRELOAD="\$ONEUI_AUDIO_LIB" pulseaudio --start --exit-idle-time=-1
+else
+    pulseaudio --start --exit-idle-time=-1
+fi
 sleep 1
 pactl load-module module-native-protocol-tcp auth-ip-acl=127.0.0.1 auth-anonymous=1 2>/dev/null || true
 export PULSE_SERVER=127.0.0.1
@@ -824,14 +862,17 @@ if [ -n "\${LINUX_DPI:-}" ]; then
     for kw in kwriteconfig6 kwriteconfig5; do
         command -v \$kw >/dev/null 2>&1 && \$kw --file kcmfontsrc --group General --key forceFontDPI "\$LINUX_DPI" && break
     done
-    # XFCE overrides Xft.dpi from xfconf once xfsettingsd is up, and its
-    # default window borders are too thin to grab on a touchscreen.
-    if command -v xfconf-query >/dev/null 2>&1; then
-        ( sleep 8
-          xfconf-query -c xsettings -p /Xft/DPI -n -t int -s "\$LINUX_DPI"
-          xfconf-query -c xfwm4 -p /general/theme -n -t string -s Default-xhdpi
-        ) >/dev/null 2>&1 &
-    fi
+fi
+
+# XFCE keeps its own copies of these in xfconf and applies them once
+# xfsettingsd is up, overriding the X resources above: DPI, window borders
+# thick enough to grab with a finger (touch tweak), and the theme.
+if command -v xfconf-query >/dev/null 2>&1; then
+    ( sleep 8
+      [ -n "\${LINUX_DPI:-}" ] && xfconf-query -c xsettings -p /Xft/DPI -n -t int -s "\$LINUX_DPI"
+      [ "\${TERMINUX_TOUCH:-1}" = 1 ] && xfconf-query -c xfwm4 -p /general/theme -n -t string -s Default-xhdpi
+      [ -n "\${TERMINUX_GTK_THEME_NAME:-}" ] && xfconf-query -c xsettings -p /Net/ThemeName -n -t string -s "\$TERMINUX_GTK_THEME_NAME"
+    ) >/dev/null 2>&1 &
 fi
 
 echo ""

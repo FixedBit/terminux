@@ -25,8 +25,10 @@ terminux dpi          # show the current value
 terminux dpi 180      # set it; restart the desktop to apply
 ```
 
-Leave it unset for automatic: **180** on a Galaxy Z Fold (models `SM-F9xx`),
-96 elsewhere. Good starting points:
+Leave it unset and the `hidpi` [device tweak](DEVICE-TWEAKS.md) picks one:
+**180** on a Galaxy Z Fold (models `SM-F9xx`), 40% of Android's screen
+density on other high-density phones, and 96 on ordinary screens. Good
+starting points:
 
 | Screen | DPI |
 |--------|-----|
@@ -35,14 +37,14 @@ Leave it unset for automatic: **180** on a Galaxy Z Fold (models `SM-F9xx`),
 | Tablets | 120–160 |
 
 The value is stored as `LINUX_DPI` in `~/.config/linux-gpu.sh` and applied at
-desktop start through X resources, KDE's font DPI and XFCE's settings. On
-XFCE, terminux also switches to the `Default-xhdpi` window theme so borders
-are big enough to grab with a finger.
+desktop start through X resources, KDE's font DPI and XFCE's settings. The `touch` tweak also switches XFCE to the
+`Default-xhdpi` window theme so borders are big enough to grab with a finger.
 
 ## Theme
 
 `--theme dark` (default) or `--theme light` sets the widget theme (Adwaita or
-Adwaita-dark) for GTK apps and, on XFCE, the window manager. Change it later
+Adwaita-dark) for GTK apps on every desktop (through `GTK_THEME`) and XFCE's
+own theme setting. Change it later
 from the desktop's own appearance settings.
 
 ## Touch input

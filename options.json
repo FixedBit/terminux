@@ -2,10 +2,31 @@
   "$comment": "Single source of truth for install options. Read by the wizard (site/), parsed by install.sh, enforced by tests/options.bats. See docs/adr/0005-options-schema.md.",
   "version": 1,
   "groups": [
-    { "id": "desktop", "title": "Desktop", "doc": "docs/DESKTOPS.md" },
-    { "id": "display", "title": "Display and look", "doc": "docs/DISPLAY.md" },
-    { "id": "software", "title": "Software", "doc": "docs/APPS.md" },
-    { "id": "network", "title": "Network and access", "doc": "docs/NETBIRD.md" }
+    {
+      "id": "desktop",
+      "title": "Desktop",
+      "doc": "docs/DESKTOPS.md"
+    },
+    {
+      "id": "display",
+      "title": "Display and look",
+      "doc": "docs/DISPLAY.md"
+    },
+    {
+      "id": "device",
+      "title": "Device tweaks",
+      "doc": "docs/DEVICE-TWEAKS.md"
+    },
+    {
+      "id": "software",
+      "title": "Software",
+      "doc": "docs/APPS.md"
+    },
+    {
+      "id": "network",
+      "title": "Network and access",
+      "doc": "docs/NETBIRD.md"
+    }
   ],
   "options": [
     {
@@ -16,10 +37,26 @@
       "label": "Desktop environment",
       "default": "xfce",
       "choices": [
-        { "value": "xfce", "label": "XFCE", "help": "Fast and customizable. Recommended, and the best fit for touch and the Fold." },
-        { "value": "lxqt", "label": "LXQt", "help": "The lightest option, for phones with little RAM." },
-        { "value": "mate", "label": "MATE", "help": "Classic two-panel layout, moderate resource use." },
-        { "value": "kde", "label": "KDE Plasma", "help": "Modern and heavy; wants 6 GB+ of RAM. Compositing is off by default." }
+        {
+          "value": "xfce",
+          "label": "XFCE",
+          "help": "Fast and customizable. Recommended, and the best fit for touch and the Fold."
+        },
+        {
+          "value": "lxqt",
+          "label": "LXQt",
+          "help": "The lightest option, for phones with little RAM."
+        },
+        {
+          "value": "mate",
+          "label": "MATE",
+          "help": "Classic two-panel layout, moderate resource use."
+        },
+        {
+          "value": "kde",
+          "label": "KDE Plasma",
+          "help": "Modern and heavy; wants 6 GB+ of RAM. Compositing is off by default."
+        }
       ]
     },
     {
@@ -38,8 +75,16 @@
       "label": "Theme",
       "default": "dark",
       "choices": [
-        { "value": "dark", "label": "Dark", "help": "Adwaita-dark widgets and a dark panel." },
-        { "value": "light", "label": "Light", "help": "Adwaita widgets." }
+        {
+          "value": "dark",
+          "label": "Dark",
+          "help": "Adwaita-dark widgets and a dark panel."
+        },
+        {
+          "value": "light",
+          "label": "Light",
+          "help": "Adwaita widgets."
+        }
       ]
     },
     {
@@ -54,22 +99,111 @@
       "default": null
     },
     {
+      "id": "tweaks",
+      "flag": "--tweaks",
+      "group": "device",
+      "type": "multi",
+      "label": "Device tweaks",
+      "help": "Each one is safe on phones it doesn't apply to, so all are on by default.",
+      "default": [
+        "wakelock",
+        "gpu-check",
+        "phantom",
+        "oneui-audio",
+        "touch",
+        "hidpi"
+      ],
+      "choices": [
+        {
+          "value": "wakelock",
+          "label": "Keep Termux awake",
+          "help": "Holds a wake lock while the desktop runs, so battery savers (Samsung especially) don't freeze it."
+        },
+        {
+          "value": "gpu-check",
+          "label": "GPU self-check",
+          "help": "Checks that Mesa's Turnip driver supports this GPU at every start, and falls back to software rendering instead of crashing."
+        },
+        {
+          "value": "phantom",
+          "label": "Handle Android's process killer",
+          "help": "Android 12+ kills background processes and takes the desktop with it. Lifts the limit through root or Shizuku if available, otherwise shows the one setting to change."
+        },
+        {
+          "value": "oneui-audio",
+          "label": "Samsung One UI audio fix",
+          "help": "Preloads libskcodec so PulseAudio works on One UI. Skipped on phones without that library."
+        },
+        {
+          "value": "touch",
+          "label": "Touch-friendly windows",
+          "help": "Bigger window borders on XFCE so you can grab them with a finger."
+        },
+        {
+          "value": "hidpi",
+          "label": "Automatic HiDPI",
+          "help": "Picks a readable DPI for high-density screens such as the Galaxy Fold's, when you haven't set one."
+        }
+      ]
+    },
+    {
       "id": "apps",
       "flag": "--apps",
       "group": "software",
       "type": "multi",
       "label": "Applications",
-      "default": ["vscode", "firefox", "vlc", "python"],
+      "default": [
+        "vscode",
+        "firefox",
+        "vlc",
+        "python"
+      ],
       "choices": [
-        { "value": "vscode", "label": "VS Code (Code - OSS)", "help": "Native Termux build with Open VSX extensions." },
-        { "value": "firefox", "label": "Firefox", "help": "Web browser." },
-        { "value": "chromium", "label": "Chromium", "help": "Web browser." },
-        { "value": "vlc", "label": "VLC", "help": "Media player." },
-        { "value": "gimp", "label": "GIMP", "help": "Image editor." },
-        { "value": "libreoffice", "label": "LibreOffice", "help": "Office suite (large)." },
-        { "value": "python", "label": "Python 3 + pip", "help": "Python toolchain." },
-        { "value": "nodejs", "label": "Node.js", "help": "JavaScript runtime and npm." },
-        { "value": "build", "label": "Build tools", "help": "clang, make, cmake, pkg-config." }
+        {
+          "value": "vscode",
+          "label": "VS Code (Code - OSS)",
+          "help": "Native Termux build with Open VSX extensions."
+        },
+        {
+          "value": "firefox",
+          "label": "Firefox",
+          "help": "Web browser."
+        },
+        {
+          "value": "chromium",
+          "label": "Chromium",
+          "help": "Web browser."
+        },
+        {
+          "value": "vlc",
+          "label": "VLC",
+          "help": "Media player."
+        },
+        {
+          "value": "gimp",
+          "label": "GIMP",
+          "help": "Image editor."
+        },
+        {
+          "value": "libreoffice",
+          "label": "LibreOffice",
+          "help": "Office suite (large)."
+        },
+        {
+          "value": "python",
+          "label": "Python 3 + pip",
+          "help": "Python toolchain."
+        },
+        {
+          "value": "nodejs",
+          "label": "Node.js",
+          "help": "JavaScript runtime and npm."
+        },
+        {
+          "value": "build",
+          "label": "Build tools",
+          "help": "clang, make, cmake, pkg-config."
+        }
       ]
     },
     {
@@ -90,9 +224,21 @@
       "label": "Extras",
       "default": [],
       "choices": [
-        { "value": "vscode-ms", "label": "Microsoft VS Code (in Debian proot)", "help": "The official build with the Microsoft extension marketplace. Adds a Debian proot (about 1.5 GB)." },
-        { "value": "cursor", "label": "Cursor CLI (in Debian proot)", "help": "Cursor's agent CLI needs glibc, so it runs in the Debian proot." },
-        { "value": "netbird", "label": "NetBird mesh", "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page." }
+        {
+          "value": "vscode-ms",
+          "label": "Microsoft VS Code (in Debian proot)",
+          "help": "The official build with the Microsoft extension marketplace. Adds a Debian proot (about 1.5 GB)."
+        },
+        {
+          "value": "cursor",
+          "label": "Cursor CLI (in Debian proot)",
+          "help": "Cursor's agent CLI needs glibc, so it runs in the Debian proot."
+        },
+        {
+          "value": "netbird",
+          "label": "NetBird mesh",
+          "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page."
+        }
       ]
     },
     {
