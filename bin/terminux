@@ -25,6 +25,8 @@ tx_use() {
 # command -> module. Adding a command = a cmd_<name> function plus a line here.
 _module_for() {
     case "$1" in
+        start|stop|restart|status) echo desktop ;;
+        menu)                      echo menu ;;
         info)                      echo info ;;
         banner|login)              echo banner ;;
         help)                      echo help ;;
@@ -37,8 +39,17 @@ case "${1:-help}" in
     -V|--version|version) echo "terminux $TERMINUX_VERSION"; exit 0 ;;
 esac
 
-cmd="${1:-help}"
-[ $# -gt 0 ] && shift
+# Plain `terminux` in a terminal opens the menu; anywhere else, help.
+if [ $# -eq 0 ]; then
+    if { [ -t 0 ] && [ -t 1 ]; } || [ "${TERMINUX_TTY:-0}" = 1 ]; then
+        set -- menu
+    else
+        set -- help
+    fi
+fi
+
+cmd="$1"
+shift
 [ "$cmd" = nb ] && cmd=netbird
 
 if ! module="$(_module_for "$cmd")"; then

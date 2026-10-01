@@ -6,12 +6,19 @@ cmd_help() {
     cat <<EOF
 terminux $TERMINUX_VERSION -- Linux desktop, VS Code and NetBird for Termux
 
-Usage: terminux <command> [args]
+Usage: terminux [command] [args]     (no command: open the menu)
+
+Desktop
+  start               start the desktop in the background, open Termux:X11
+  stop                stop the desktop
+  restart             stop, then start
+  status              what's running
 
 Health
   info                device and GPU profile
 
 Other
+  menu                the menu (same as plain terminux)
   banner [on|off]     show the banner, or turn it on/off at login
   login               what runs when Termux opens (banner, sshd)
   version             print the version

@@ -5,10 +5,10 @@ load helpers
 
 setup() { tx_sandbox; }
 
-@test "no arguments prints help" {
+@test "no arguments outside a terminal prints help" {
     run bash "$TX"
     [ "$status" -eq 0 ]
-    [[ "$output" == *"Usage: terminux <command>"* ]]
+    [[ "$output" == *"Usage: terminux"* ]]
 }
 
 @test "--help and help are the same" {
