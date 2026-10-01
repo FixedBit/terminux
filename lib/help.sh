@@ -14,6 +14,11 @@ Desktop
   restart             stop, then start
   status              what's running
 
+Display
+  display <mode>      Termux:X11 output: native | scaled | fold
+  dpi [value]         show or set the desktop DPI
+  touch [mode]        trackpad | touch (no argument: toggle)
+
 Environments
   debian              a shell in Debian as your user
   debian -- <cmd>     run one command in Debian

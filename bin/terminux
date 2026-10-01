@@ -27,6 +27,7 @@ _module_for() {
     case "$1" in
         start|stop|restart|status) echo desktop ;;
         menu)                      echo menu ;;
+        display|dpi|touch)         echo display ;;
         debian)                    echo debian ;;
         env)                       echo env ;;
         app)                       echo apps ;;
