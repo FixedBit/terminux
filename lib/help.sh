@@ -45,8 +45,12 @@ Health
   fix [what]          repair them: launchers (default), phantom, all
   info                device and GPU profile
 
+Maintenance
+  update [--check]    pull the latest terminux (or just see what's new)
+  uninstall [--all]   remove terminux (--all: environments too)
+
 Other
-  menu                the menu (same as plain terminux)
+  menu               the menu (same as plain terminux)
   banner [on|off]     show the banner, or turn it on/off at login
   login               what runs when Termux opens (banner, sshd)
   version             print the version
