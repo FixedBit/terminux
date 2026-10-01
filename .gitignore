@@ -1,0 +1,23 @@
+# Private values are passed at install time and must never be committed.
+# See docs/adr/0003-secrets-at-runtime.md.
+*.env
+!*.env.example
+private.env
+setup-key
+*.setup-key
+.netbird/
+
+# Logs and local state
+*.log
+.terminux-state/
+
+# Editor / OS cruft
+.DS_Store
+*.swp
+*~
+.vscode/
+.idea/
+
+# Local agent tooling
+.claude/
+.dual-graph/

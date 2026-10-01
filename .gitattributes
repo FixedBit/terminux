@@ -1,0 +1,5 @@
+# Everything here runs on Android under bash. CRLF line endings break it
+# ("$'\r': command not found"), so force LF regardless of the checkout OS.
+* text=auto eol=lf
+*.png binary
+*.jpg binary

@@ -1,0 +1,18 @@
+terminux
+Copyright (c) 2026 FixedBit
+
+terminux is MIT licensed (see LICENSE), and builds on two upstream projects:
+
+1. linux-android by Mayukh Bagchi -- MIT License
+   https://github.com/mayukh4/linux-android (imported at commit fb63e0d)
+   setup/termux-linux-setup.sh and setup/setup-homeassistant.sh started as
+   copies of that project's scripts and have since been modified here.
+   License text: LICENSES/linux-android-MIT.txt
+
+2. ternux by Sobuj Miah -- Apache License 2.0
+   https://github.com/soobujmiah/ternux
+   The CLI layout (bin/ + lib/ modules, library discovery, the doctor command
+   and device detection helpers) is adapted from ternux. Files containing
+   adapted code say so in their header and remain under Apache-2.0 for those
+   portions; they have been modified for terminux.
+   License text: LICENSES/Apache-2.0.txt, upstream NOTICE: LICENSES/ternux-NOTICE.txt
