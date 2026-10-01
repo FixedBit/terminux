@@ -35,6 +35,7 @@ _module_for() {
         netbird)                   echo netbird ;;
         ssh)                       echo ssh ;;
         info)                      echo info ;;
+        doctor)                    echo doctor ;;
         banner|login)              echo banner ;;
         help)                      echo help ;;
         *)                         return 1 ;;

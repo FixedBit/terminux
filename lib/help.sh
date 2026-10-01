@@ -41,6 +41,7 @@ Network
   ssh on|off          SSH server on port 8022, started when Termux opens
 
 Health
+  doctor              check for known problems and say how to fix each
   info                device and GPU profile
 
 Other
