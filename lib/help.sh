@@ -42,7 +42,8 @@ Network
 
 Health
   doctor              check for known problems and say how to fix each
-  fix [what]          repair them: launchers (default), phantom, all
+  fix [what]          repair them: launchers (default), phantom, packages, all
+  report              save device info and logs to one file for debugging
   info                device and GPU profile
 
 Maintenance

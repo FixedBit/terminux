@@ -240,3 +240,12 @@ not_called() { run grep -c "^$1" "$BATS_TEST_TMPDIR/calls.log"; [ "$output" = 0 
     run grep -cE '^export LINUX_DPI=' "$HOME/.config/linux-gpu.sh"
     [ "$output" = 0 ]
 }
+
+@test "step_update leaves upgrading to terminux when it already did it" {
+    stub pkg 'echo "pkg $*" >> "$BATS_TEST_TMPDIR/pkg.log"'
+    stub apt-get 'exit 0'
+    run bash -c ". '$SETUP'; update_progress() { :; }; spinner() { wait \"\$1\"; }; LOG_FILE=/dev/null TERMINUX_UPGRADED=1 step_update"
+    [ "$status" -eq 0 ]
+    run grep -c "upgrade" "$BATS_TEST_TMPDIR/pkg.log"
+    [ "$output" = 0 ] || [ ! -s "$BATS_TEST_TMPDIR/pkg.log" ]
+}

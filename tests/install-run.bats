@@ -13,6 +13,9 @@ setup() {
         stub "$c" "echo \"$c \$*\" >> \"\$CALLS\""
     done
     stub pm 'printf "package:com.termux.x11\npackage:com.termux.api\n"'
+    # Package upgrades succeed unless a test says otherwise.
+    stub apt-get 'exit 0'
+    stub dpkg 'exit 0'
     stub pgrep 'exit 1'
     stub git 'echo "git $*" >> "$CALLS"; [ "$1" = clone ] && mkdir -p "${@: -1}"; exit 0'
     stub curl 'echo "curl $*" >> "$CALLS"; while [ $# -gt 0 ]; do [ "$1" = -o ] && : > "$2"; shift; done'
@@ -22,9 +25,9 @@ setup() {
             while [ $# -gt 0 ]; do case "$1" in --name|-n) n="$2"; shift 2;; *) i="$1"; shift;; esac; done
             mkdir -p "$pd/containers/${n:-$i}/rootfs/etc"; fi; exit 0'
     # The desktop installer is swapped for one that records what it was given.
-    export TERMINUX_DESKTOP_INSTALLER="$BATS_TEST_TMPDIR/desktop.sh"
+    export TERMINUX_DESKTOP_INSTALLER="$BATS_TEST_TMPDIR/desktop.sh" REPO_ROOT
     cat > "$TERMINUX_DESKTOP_INSTALLER" <<'SH'
-env | grep -E '^TERMINUX_(DE|WINE|APPS|TWEAKS|THEME|DPI)=' | sort > "$BATS_TEST_TMPDIR/desktop.env"
+env | grep -E '^TERMINUX_(DE|WINE|APPS|TWEAKS|THEME|DPI|UPGRADED)=' | sort > "$BATS_TEST_TMPDIR/desktop.env"
 echo "desktop-installer" >> "$CALLS"
 printf '#!/bin/bash\n' > "$HOME/start-linux.sh"
 SH
@@ -129,4 +132,34 @@ run_install() { run bash "$INSTALL" "$@" </dev/null; }
 @test "ends by telling you how to start" {
     run_install
     [[ "$output" == *"terminux start"* ]]
+}
+
+@test "Termux is upgraded by terminux's own upgrade step, and only once" {
+    stub apt-get 'echo "apt-get $*" >> "$CALLS"'
+    stub dpkg 'echo "dpkg $*" >> "$CALLS"'
+    run_install
+    grep -q "apt-get .*full-upgrade" "$CALLS"
+    grep -qx "TERMINUX_UPGRADED=1" "$BATS_TEST_TMPDIR/desktop.env"
+}
+
+@test "a failed upgrade stops before the desktop, with the cause and a fix" {
+    stub dpkg 'exit 0'
+    stub apt-get '[[ "$*" == *full-upgrade* ]] && { cat "'"$REPO_ROOT"'/tests/fixtures/apt/corelib.log"; exit 100; }; exit 0'
+    run_install
+    [ "$status" -ne 0 ]
+    run grep -c desktop-installer "$CALLS"
+    [ "$output" = 0 ]
+}
+
+@test "when the desktop installer fails, its log is read and the cause shown" {
+    stub apt-get 'exit 0'; stub dpkg 'exit 0'
+    cat > "$TERMINUX_DESKTOP_INSTALLER" <<'SH'
+cat "$REPO_ROOT/tests/fixtures/apt/overwrite.log" >> "$HOME/termux-setup.log"
+exit 1
+SH
+    run_install
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"mesa-zink"* ]]
+    [[ "$output" == *"Fix:"* ]]
+    [[ "$output" == *"terminux report"* ]]
 }

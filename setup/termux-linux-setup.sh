@@ -410,6 +410,13 @@ step_update() {
     (DEBIAN_FRONTEND=noninteractive apt-get update -y >> "$LOG_FILE" 2>&1) &
     spinner $! "Updating package lists..."
 
+    # terminux upgrades first, with diagnosis and repair (lib/pkgfix.sh);
+    # upgrading again here would only hit the same problems with less help.
+    if [ "${TERMINUX_UPGRADED:-0}" = "1" ]; then
+        echo -e "  ${GREEN}✔${NC}  Packages already upgraded."
+        return 0
+    fi
+
     # Run pkg upgrade in FOREGROUND (not backgrounded via &) so we can catch
     # the libpcre/libandroid-selinux crash that kills binaries like 'sleep'
     # mid-session when core libraries are replaced. If it fails, we tell the

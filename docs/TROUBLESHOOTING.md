@@ -4,6 +4,30 @@ Start with `terminux doctor`. It checks for every problem on this page that
 it can detect and tells you the command that fixes it; most of them are
 fixed by `terminux fix`.
 
+## The install stops
+
+When a step fails, the installer now tells you which step, shows the actual
+error lines, explains the likely cause and gives the command that fixes it.
+Package problems it can repair safely, it repairs and retries by itself.
+
+| What it says | Why | Fix |
+|--------------|-----|-----|
+| Two packages both claim the same file ("trying to overwrite") | Another setup script installed its own version of a package (often a graphics driver) that Termux now ships too | `terminux fix packages` |
+| "Upgrade hit a library conflict" (older versions) | Usually the same file conflict, or an interrupted install | Update terminux (`terminux update`), then `terminux fix packages` and run the install again |
+| An install was interrupted | Termux was closed or Android killed it mid-install | `terminux fix packages` |
+| Couldn't reach the package server | Connection, VPN or data saver | Check your connection, or `termux-change-repo` |
+| Hash sum mismatch | The mirror is mid-update | `termux-change-repo`, pick another mirror |
+| `CANNOT LINK EXECUTABLE` | A core library was upgraded while Termux was running | Close Termux completely, reopen, `pkg upgrade`, run the install again |
+| Out of space | The phone is full | Free about 4 GB |
+
+Run the same install command again after fixing; packages that are already
+installed are skipped. `terminux doctor` also spots half-installed packages.
+
+To get help, run `terminux report`. It saves one file with your device
+details, `terminux doctor`, your package sources and the relevant logs, with
+setup keys, tokens and anything in `private.env` replaced by `REDACTED`, ready
+to attach to an issue.
+
 ## The desktop
 
 | What you see | Why | Fix |
@@ -41,6 +65,5 @@ them and the desktop works without them.
 
 ## Still stuck
 
-`terminux info` prints your device, Android version and GPU. Include it, and
-the output of `terminux doctor`, when you
+Run `terminux report` and attach the file it makes when you
 [open an issue](https://github.com/FixedBit/terminux/issues).

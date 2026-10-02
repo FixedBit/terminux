@@ -37,6 +37,7 @@ _module_for() {
         info)                      echo info ;;
         doctor)                    echo doctor ;;
         fix)                       echo fix ;;
+        report)                    echo report ;;
         update)                    echo update ;;
         uninstall)                 echo uninstall ;;
         banner|login)              echo banner ;;

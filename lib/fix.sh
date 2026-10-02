@@ -8,6 +8,8 @@
 . "$TX_LIB/status.sh"
 # shellcheck source=lib/apps.sh
 . "$TX_LIB/apps.sh"
+# shellcheck source=lib/pkgfix.sh
+. "$TX_LIB/pkgfix.sh"
 
 TX_FIX_MARK="# terminux fix"
 
@@ -98,9 +100,10 @@ cmd_fix() {
             _tx_fix_launchers; _tx_fix_kwin; _tx_fix_xlock; _tx_fix_vscode
             tx_ok "Done. Restart the desktop to pick up the changes: terminux restart" ;;
         phantom) tx_fix_phantom ;;
+        packages) tx_pkg_fix ;;
         all)
             _tx_fix_launchers; _tx_fix_kwin; _tx_fix_xlock; _tx_fix_vscode
             tx_fix_phantom ;;
-        *) tx_fail "usage: terminux fix [launchers|phantom|all]"; return 2 ;;
+        *) tx_fail "usage: terminux fix [launchers|phantom|packages|all]"; return 2 ;;
     esac
 }

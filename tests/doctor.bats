@@ -78,3 +78,10 @@ setup() {
     run bash "$TX" doctor
     [[ "$output" == *"Cursor"* && "$output" == *"terminux app cursor"* ]]
 }
+
+@test "half-installed packages are found and point at fix packages" {
+    stub dpkg '[ "$1" = --audit ] && echo "The following packages are only half configured: mesa"; exit 0'
+    run bash "$TX" doctor
+    [ "$status" -ne 0 ]
+    [[ "$output" == *"half-installed"* && "$output" == *"terminux fix packages"* ]]
+}

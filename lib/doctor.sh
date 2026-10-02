@@ -67,6 +67,10 @@ cmd_doctor() {
         _doc_warn "A Cursor CLI installed straight into Termux can't run (it needs glibc)" "terminux app cursor"
     fi
 
+    if tx_has dpkg && [ -n "$(dpkg --audit 2>/dev/null)" ]; then
+        _doc_fail "Some packages are half-installed (an install or upgrade was cut off)" "terminux fix packages"
+    fi
+
     echo
     if [ "$TX_DOC_FAILS" -eq 0 ] && [ "$TX_DOC_WARNS" -eq 0 ]; then
         tx_ok "No problems found."

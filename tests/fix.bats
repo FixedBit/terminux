@@ -86,3 +86,13 @@ setup() {
     [ "$status" -eq 0 ]
     [[ "$output" == *"Android 12"* ]]
 }
+
+@test "fix packages runs the package repair sequence" {
+    stub dpkg 'echo "dpkg $*" >> "$CALLS"'
+    stub apt-get 'echo "apt-get $*" >> "$CALLS"'
+    run bash "$TX" fix packages
+    [ "$status" -eq 0 ]
+    grep -q "dpkg --configure -a" "$CALLS"
+    grep -q "apt-get .*--force-overwrite.*install -f" "$CALLS"
+    grep -q "apt-get .*full-upgrade" "$CALLS"
+}

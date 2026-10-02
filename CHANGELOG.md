@@ -6,6 +6,19 @@ All notable changes to this project are documented here. The format follows
 
 ## [Unreleased]
 
+### Added
+- `terminux report`: device info, doctor output and logs in one file, with
+  keys and tokens removed, for debugging or attaching to an issue.
+- `terminux fix packages`: finishes interrupted installs, resolves file
+  conflicts and broken dependencies, then upgrades.
+
+### Fixed
+- The install no longer stops with "Upgrade hit a library conflict". Termux
+  is upgraded by terminux first: it reads apt/dpkg's errors, repairs file
+  conflicts, interrupted installs and broken dependencies by itself, and
+  otherwise names the cause, shows the error and gives the fix.
+- A failed desktop install now says why, instead of pointing at the log.
+
 ## [0.1.0] - 2026-10-01
 
 First release.

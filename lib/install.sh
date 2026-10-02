@@ -2,7 +2,7 @@
 # terminux -- carry out an install plan (TX_PLAN from lib/options.sh).
 # SPDX-License-Identifier: Apache-2.0
 
-for _m in status android shell banner debian apps catalog env netbird private fix ssh; do
+for _m in status android shell banner debian apps catalog env netbird private fix ssh pkgfix; do
     # shellcheck source=/dev/null
     . "$TX_LIB/$_m.sh"
 done
@@ -18,8 +18,9 @@ _tx_try() {
 }
 
 _tx_install_base() {
-    tx_step "Updating Termux and installing the basics"
-    pkg update -y >/dev/null 2>&1 || true
+    tx_step "Updating Termux"
+    tx_pkg_upgrade || return 1
+    tx_step "Installing the basics"
     pkg install -y x11-repo tur-repo >/dev/null 2>&1 || true
     pkg install -y git curl termux-api termux-x11-nightly proot-distro \
         || { tx_fail "Couldn't install the basic packages; check your connection and try again."; return 1; }
@@ -47,6 +48,7 @@ _tx_install_desktop() {
         TERMINUX_APPS="${TX_PLAN[apps]}"
         TERMINUX_TWEAKS="${TX_PLAN[tweaks]}"
         TERMINUX_THEME="${TX_PLAN[theme]}"
+        TERMINUX_UPGRADED=1
     )
     [ "${TX_PLAN[dpi]}" != auto ] && env+=(TERMINUX_DPI="${TX_PLAN[dpi]}")
     env "${env[@]}" bash "$TX_DESKTOP_INSTALLER"
@@ -79,7 +81,15 @@ tx_install_run() {
     _tx_install_save_config
     _tx_install_link_cli
 
-    _tx_install_desktop || tx_die "The desktop install failed; see the messages above and ~/termux-setup.log"
+    if ! _tx_install_desktop; then
+        # The desktop installer logs every package step; find out why it failed.
+        local tail; tail=$(mktemp)
+        tail -n 400 "$HOME/termux-setup.log" > "$tail" 2>/dev/null
+        tx_pkg_report_failure "Installing the ${TX_PLAN[de]} desktop" "$(tx_pkg_diagnose "$tail")" "$HOME/termux-setup.log"
+        rm -f "$tail"
+        echo "  Fix the problem above, then run the same install command again; packages that are already installed are skipped."
+        exit 1
+    fi
     _tx_try "extra packages" _tx_install_packages
     [[ ",${TX_PLAN[apps]}," == *,vscode,* ]] && tx_vscode_argv "$HOME/.vscode-oss/argv.json"
     _tx_try "shell setup" _tx_install_shell
