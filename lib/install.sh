@@ -76,10 +76,12 @@ tx_install_run() {
     tx_private_load_default
 
     command -v termux-wake-lock >/dev/null 2>&1 && termux-wake-lock
-    _tx_install_base || exit 1
-    tx_android_ensure_apps
+    # First, so 'terminux fix packages' and 'terminux report' are there even
+    # if the very next step fails.
     _tx_install_save_config
     _tx_install_link_cli
+    _tx_install_base || exit 1
+    tx_android_ensure_apps
 
     if ! _tx_install_desktop; then
         # The desktop installer logs every package step; find out why it failed.

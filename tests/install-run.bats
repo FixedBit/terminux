@@ -163,3 +163,10 @@ SH
     [[ "$output" == *"Fix:"* ]]
     [[ "$output" == *"terminux report"* ]]
 }
+
+@test "even when the upgrade fails, the terminux command is there to fix and report" {
+    stub apt-get '[[ "$*" == *full-upgrade* ]] && { cat "'"$REPO_ROOT"'/tests/fixtures/apt/corelib.log"; exit 100; }; exit 0'
+    run_install
+    [ "$status" -ne 0 ]
+    [ -L "$PREFIX/bin/terminux" ] || [ -f "$PREFIX/bin/terminux" ]
+}
