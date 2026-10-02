@@ -2,6 +2,8 @@
 # See docs/adr/0003-secrets-at-runtime.md.
 *.env
 !*.env.example
+# Environment profiles are code, not secrets.
+!envs/*.env
 private.env
 setup-key
 *.setup-key
