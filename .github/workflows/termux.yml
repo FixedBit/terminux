@@ -22,7 +22,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [smoke, packages, netbird, shell, debian]
+        check: [smoke, packages, netbird, shell, debian, distros]
     steps:
       - uses: actions/checkout@v4
       - uses: docker/setup-qemu-action@v3

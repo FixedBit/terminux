@@ -68,7 +68,7 @@ run_install() { run bash "$INSTALL" "$@" </dev/null; }
 }
 
 @test "links the terminux command and saves the choices" {
-    run_install --user sam --shell bash
+    run_install --with debian --user sam --shell bash
     [ -L "$PREFIX/bin/terminux" ] || [ -f "$PREFIX/bin/terminux" ]
     grep -qx "user=sam" "$HOME/.config/terminux/config"
     grep -qx "shell=bash" "$HOME/.config/terminux/config"
@@ -169,4 +169,27 @@ SH
     run_install
     [ "$status" -ne 0 ]
     [ -L "$PREFIX/bin/terminux" ] || [ -f "$PREFIX/bin/terminux" ]
+}
+
+@test "--base debian builds the desktop inside Debian, not with the Termux installer" {
+    run_install --base debian --de xfce --user sam
+    [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+    run grep -c desktop-installer "$CALLS"
+    [ "$output" = 0 ]
+    grep -q "^proot-distro|install|debian" "$CALLS"
+    grep -q "startxfce4" "$HOME/start-linux.sh"
+}
+
+@test "Termux with no desktop skips the desktop installer and installs the apps" {
+    run_install --de none --apps python,nodejs
+    [ "$status" -eq 0 ] || { echo "$output"; return 1; }
+    run grep -c desktop-installer "$CALLS"
+    [ "$output" = 0 ]
+    grep -q "pkg install -y .*python" "$CALLS"
+    grep -q "pkg install -y .*nodejs" "$CALLS"
+}
+
+@test "on a distro, extra packages are installed inside it with apt" {
+    run_install --base ubuntu --de none --user sam --packages htop,neovim
+    grep -q "^proot-distro|login|ubuntu|.*apt-get install -y htop neovim" "$CALLS"
 }

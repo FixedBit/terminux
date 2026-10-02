@@ -3,7 +3,7 @@
 #
 #   tools/container-test.sh [check...]     default: all
 #
-# Checks: smoke packages netbird shell debian
+# Checks: smoke packages netbird shell debian distros
 # smoke and packages run on the aarch64 image (the phone's CPU, emulated).
 # Anything that uses proot runs on the x86_64 image instead: QEMU's user-mode
 # emulation has no ptrace, which proot needs. Phones have it.
@@ -14,7 +14,7 @@
 set -u
 repo="$(cd "$(dirname "$0")/.." && pwd)"
 checks=("$@")
-[ ${#checks[@]} -gt 0 ] || checks=(smoke packages netbird shell debian)
+[ ${#checks[@]} -gt 0 ] || checks=(smoke packages netbird shell debian distros)
 
 image_for() {
     case "$1" in

@@ -2,7 +2,7 @@
 # terminux -- carry out an install plan (TX_PLAN from lib/options.sh).
 # SPDX-License-Identifier: Apache-2.0
 
-for _m in status android shell banner debian apps catalog env netbird private fix ssh pkgfix; do
+for _m in status android shell banner debian apps catalog env netbird private fix ssh pkgfix prootdesk; do
     # shellcheck source=/dev/null
     . "$TX_LIB/$_m.sh"
 done
@@ -28,7 +28,9 @@ _tx_install_base() {
 
 _tx_install_save_config() {
     local k
-    for k in de theme user shell zsh banner ssh tweaks; do
+    for k in base de theme user shell zsh banner ssh tweaks; do
+        # No username on plain Termux; keep whatever default is there.
+        [ "$k" = user ] && [ -z "${TX_PLAN[user]}" ] && continue
         tx_config_set "$k" "${TX_PLAN[$k]}"
     done
 }
@@ -57,8 +59,39 @@ _tx_install_desktop() {
 _tx_install_packages() {
     [ -n "${TX_PLAN[packages]}" ] || return 0
     tx_step "Installing extra packages"
-    # shellcheck disable=SC2046 # one argument per package; names are validated
-    pkg install -y $(tr ',' ' ' <<< "${TX_PLAN[packages]}")
+    local list; list=$(tr ',' ' ' <<< "${TX_PLAN[packages]}")
+    if [ "${TX_PLAN[base]}" = termux ]; then
+        # shellcheck disable=SC2086 # one argument per package; names are validated
+        pkg install -y $list
+    else
+        proot-distro login "${TX_PLAN[base]}" --shared-tmp -- bash -c \
+            "DEBIAN_FRONTEND=noninteractive apt-get install -y $list"
+    fi
+}
+
+# Termux with no desktop: just the command-line apps.
+_tx_install_terminal_only() {
+    tx_step "Installing apps"
+    # app_packages lives in the desktop installer; sourcing it doesn't run it.
+    # shellcheck source=setup/termux-linux-setup.sh
+    . "$TX_LIB/../setup/termux-linux-setup.sh"
+    local app
+    while read -r app; do
+        # shellcheck disable=SC2046 # one argument per package
+        pkg install -y $(app_packages "$app") || return 1
+    done < <(_tx_list "${TX_PLAN[apps]}")
+}
+
+# Pick the desktop path: native Termux, Termux terminal-only, or a distro.
+_tx_install_main() {
+    if [ "${TX_PLAN[base]}" != termux ]; then
+        tx_prootdesk_install "${TX_PLAN[base]}" "${TX_PLAN[de]}" "${TX_PLAN[apps]}" "${TX_PLAN[theme]}" \
+            "${TX_PLAN[dpi]}" "${TX_PLAN[tweaks]}" "${TX_PLAN[user]}" "${TX_PLAN[shell]}" "${TX_PLAN[zsh]}"
+    elif [ "${TX_PLAN[de]}" = none ]; then
+        _tx_install_terminal_only
+    else
+        _tx_install_desktop
+    fi
 }
 
 _tx_install_shell() {
@@ -83,7 +116,7 @@ tx_install_run() {
     _tx_install_base || exit 1
     tx_android_ensure_apps
 
-    if ! _tx_install_desktop; then
+    if ! _tx_install_main; then
         # The desktop installer logs every package step; find out why it failed.
         local tail; tail=$(mktemp)
         tail -n 400 "$HOME/termux-setup.log" > "$tail" 2>/dev/null
@@ -93,7 +126,8 @@ tx_install_run() {
         exit 1
     fi
     _tx_try "extra packages" _tx_install_packages
-    [[ ",${TX_PLAN[apps]}," == *,vscode,* ]] && tx_vscode_argv "$HOME/.vscode-oss/argv.json"
+    [ "${TX_PLAN[base]}" = termux ] && [[ ",${TX_PLAN[apps]}," == *,vscode,* ]] \
+        && tx_vscode_argv "$HOME/.vscode-oss/argv.json"
     _tx_try "shell setup" _tx_install_shell
     [ "${TX_PLAN[ssh]}" = yes ] && _tx_try "SSH server" cmd_ssh on
 
