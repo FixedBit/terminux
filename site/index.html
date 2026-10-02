@@ -15,56 +15,66 @@
 <header class="top">
   <a class="wordmark" href="./">terminux</a>
   <nav aria-label="Site">
-    <a href="./" aria-current="page">Wizard</a>
+    <a href="./" aria-current="page">Home</a>
+    <a href="wizard.html">Wizard</a>
     <a href="docs.html">Docs</a>
     <a href="https://github.com/FixedBit/terminux">GitHub</a>
   </nav>
 </header>
 
-<main class="layout">
-  <section class="intro" aria-labelledby="title">
+<main class="home">
+  <section class="hero" aria-labelledby="title">
     <h1 id="title">Linux on your phone, from one command.</h1>
     <p class="lede">A full desktop, VS Code, AI coding tools and as many Linux
-      environments as you like, running in Termux on Android. No root.
-      Pick what you want below and paste the command into Termux.</p>
+      environments as you like, running in Termux on Android. No root.</p>
+    <div class="actions">
+      <a class="button primary" href="wizard.html">Build my install command</a>
+      <a class="button" href="docs.html">Read the docs</a>
+    </div>
+  </section>
+
+  <section class="how" aria-labelledby="how-title">
+    <h2 id="how-title">How it works</h2>
     <ol class="steps">
       <li><strong>Install Termux</strong> from
         <a href="https://f-droid.org/packages/com.termux/">F-Droid</a> or
         <a href="https://github.com/termux/termux-app/releases">GitHub</a>.
         Not the Play Store version, which is outdated.</li>
-      <li><strong>Choose</strong> what to install below, or start from a preset.
-        Everything can be changed later.</li>
-      <li><strong>Copy the command</strong> and paste it into Termux. It installs
-        the Termux:X11 app for you and takes 20–40 minutes.</li>
+      <li><strong>Open the <a href="wizard.html">wizard</a></strong> and pick
+        your desktop, apps and extras. It writes the install command for you.</li>
+      <li><strong>Paste the command into Termux.</strong> It installs everything,
+        including the Termux:X11 app that shows the desktop. Allow 20–40 minutes.</li>
+      <li><strong>Reopen Termux and type <code>terminux</code></strong> for a menu,
+        or <code>terminux start</code> for the desktop.</li>
     </ol>
   </section>
 
-  <form id="wizard" class="wizard" aria-label="Install options" novalidate>
-    <fieldset class="presets">
-      <legend>Start from</legend>
-      <div class="preset-row" id="presets"></div>
-    </fieldset>
-    <div id="groups"><p class="loading">Loading options…</p></div>
-  </form>
-
-  <aside class="terminal-wrap" aria-label="Your install command">
-    <div class="terminal" id="terminal">
+  <section class="quick" aria-labelledby="quick-title">
+    <h2 id="quick-title">Happy with the defaults?</h2>
+    <p>XFCE desktop, VS Code, Firefox, VLC, Python, and zsh with Oh My Zsh.
+      Paste this into Termux and skip the wizard:</p>
+    <div class="terminal">
       <div class="term-bar">
-        <span class="term-title">Paste this into Termux</span>
-        <button type="button" id="copy" class="copy">Copy</button>
+        <span class="term-title">Termux</span>
+        <button type="button" class="copy" data-copy="quick-cmd">Copy</button>
       </div>
-      <pre class="term-body"><span class="prompt">~ $</span> <code id="command">curl -fsSL https://fixedbit.github.io/terminux/install.sh | bash</code></pre>
-      <div class="extra-keys" aria-hidden="true">
-        <span>ESC</span><span>/</span><span>-</span><span>HOME</span><span>↑</span><span>END</span><span>PGUP</span>
-        <span>TAB</span><span>CTRL</span><span>ALT</span><span>←</span><span>↓</span><span>→</span><span>PGDN</span>
-      </div>
+      <pre class="term-body"><span class="prompt">~ $</span> <code id="quick-cmd">curl -fsSL https://fixedbit.github.io/terminux/install.sh | bash</code></pre>
     </div>
-    <p class="secret-note">This page never asks for keys or passwords. If you
-      chose NetBird, the installer asks for your setup key on the phone, or see
-      <a href="docs.html?page=NETBIRD">how to pass it privately</a>.</p>
-    <p class="after">After it finishes, open Termux again and run
-      <code>terminux</code> for a menu, or <code>terminux start</code> for the desktop.</p>
-  </aside>
+  </section>
+
+  <section class="features" aria-labelledby="what-title">
+    <h2 id="what-title">What you can set up</h2>
+    <dl>
+      <div><dt>A desktop</dt><dd>XFCE, LXQt, MATE or KDE Plasma in the Termux:X11 app, GPU-accelerated on Adreno phones.</dd></div>
+      <div><dt>VS Code</dt><dd>The native build, or Microsoft's own in a Debian environment.</dd></div>
+      <div><dt>AI tools</dt><dd>Claude Code, Codex CLI, Gemini CLI, OpenCode, GrapeRoot, Aider, Cursor, Ollama and llama.cpp.</dd></div>
+      <div><dt>Environments</dt><dd>Separate Linux systems for development, gaming or security work, each with your own user.</dd></div>
+      <div><dt>Phone fixes</dt><dd>Keeps Android from freezing or killing the desktop, fixes Samsung audio, sizes text for high-resolution screens.</dd></div>
+      <div><dt>NetBird</dt><dd>Put the phone on your private mesh without root. Keys are entered on the phone, never here.</dd></div>
+    </dl>
+    <p><a href="docs.html?page=GETTING-STARTED">Getting started guide</a> ·
+      <a href="docs.html?page=TROUBLESHOOTING">Troubleshooting</a></p>
+  </section>
 </main>
 
 <footer class="foot">
@@ -75,7 +85,18 @@
 </footer>
 
 <div id="toast" class="toast" role="status" aria-live="polite"></div>
-<script src="assets/command.js"></script>
-<script src="assets/wizard.js"></script>
+<script>
+  // Copy buttons on the home page.
+  for (const b of document.querySelectorAll("[data-copy]")) {
+    b.addEventListener("click", async () => {
+      const text = document.getElementById(b.dataset.copy).textContent;
+      const t = document.getElementById("toast");
+      try { await navigator.clipboard.writeText(text); t.textContent = "Copied. Paste it into Termux."; }
+      catch { t.textContent = "Select the command and copy it."; }
+      t.classList.add("show");
+      setTimeout(() => t.classList.remove("show"), 1800);
+    });
+  }
+</script>
 </body>
 </html>

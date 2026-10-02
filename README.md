@@ -4,7 +4,7 @@ Linux on your Android phone, set up with one command. A full desktop in
 Termux:X11, VS Code, AI coding tools, and as many Linux environments as you
 want, running in Termux without root.
 
-**Build your install command with the wizard: https://fixedbit.github.io/terminux/**
+**Build your install command with the wizard: https://fixedbit.github.io/terminux/wizard.html**
 
 Or take the defaults (XFCE, VS Code, Firefox, VLC, Python, zsh with Oh My Zsh
 and Powerlevel10k). Paste this into a fresh Termux:

@@ -18,7 +18,7 @@ does it.
 
 ## 1. Build your command
 
-Open the [wizard](https://fixedbit.github.io/terminux/) on any device, pick a preset or go through the options,
+Open the [wizard](https://fixedbit.github.io/terminux/wizard.html) on any device, pick a preset or go through the options,
 and copy the command it shows. Every option has a sensible default, so the
 plain command works too:
 
