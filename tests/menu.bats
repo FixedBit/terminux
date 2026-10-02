@@ -36,3 +36,25 @@ setup() {
     [[ "$output" == *"zz"* ]]
     [ "$(grep -c 'Start the desktop' <<<"$output")" -ge 2 ]
 }
+
+@test "after an action, its result is shown under a heading with how it went" {
+    TERMINUX_TTY=1 run bash "$TX" <<<$'4\n\nq'
+    [[ "$output" == *"── Status ──"* ]]
+    [[ "$output" == *"Done."* ]]
+}
+
+@test "the menu waits for Enter before coming back, so the result stays readable" {
+    TERMINUX_TTY=1 run bash "$TX" <<<$'4\n\nq'
+    [[ "$output" == *"Press Enter to go back to the menu"* ]]
+    # The result comes before the menu is drawn again.
+    result_line=$(grep -n "Done." <<<"$output" | head -1 | cut -d: -f1)
+    second_menu=$(grep -n "Start the desktop" <<<"$output" | sed -n 2p | cut -d: -f1)
+    [ -n "$second_menu" ] && [ "$result_line" -lt "$second_menu" ]
+}
+
+@test "a failed action says so, with what to do next" {
+    # No desktop installed, so Start fails.
+    TERMINUX_TTY=1 run bash "$TX" <<<$'1\n\nq'
+    [[ "$output" == *"didn't finish"* ]]
+    [[ "$output" == *"terminux doctor"* ]]
+}

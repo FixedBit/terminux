@@ -40,9 +40,23 @@ cmd_menu() {
             tx_warn "'$choice' isn't on the menu."
             continue
         fi
-        cmd="${TX_MENU[$((choice - 1))]#*|}"
-        echo
+        local item="${TX_MENU[$((choice - 1))]}" rc
+        cmd="${item#*|}"
+        # The result gets its own section and stays on screen until Enter,
+        # instead of scrolling away under a freshly drawn menu.
+        printf '\n%s── %s ──%s\n\n' "$TX_W" "${item%%|*}" "$TX_C0"
         # shellcheck disable=SC2086 # cmd holds a command and its arguments
         bash "$TX_LIB/../bin/terminux" $cmd
+        rc=$?
+        echo
+        if [ "$rc" -eq 0 ]; then
+            tx_ok "Done."
+        else
+            tx_fail "That didn't finish (exit code $rc). The messages above say why; for a full check run: terminux doctor"
+        fi
+        printf '  Press Enter to go back to the menu '
+        read -r _ || return 0
+        [ -t 0 ] || echo
+        [ -t 1 ] && printf '\033[H\033[2J'
     done
 }
