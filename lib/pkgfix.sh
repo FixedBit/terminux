@@ -20,6 +20,10 @@ tx_pkg_diagnose() {
         cause=lock
     elif grep -qE "No space left on device" "$log"; then
         cause=storage
+    elif grep -qE 'cannot locate symbol "(SSL_|TLS_|EVP_|ERR_|OPENSSL_|curl_)' "$log"; then
+        # A program and the library it needs are from different releases,
+        # e.g. a new curl with the old OpenSSL after a half-done upgrade.
+        cause=libmismatch
     elif grep -qE "CANNOT LINK EXECUTABLE|cannot locate symbol|library \".*\" not found" "$log"; then
         cause=corelib
     elif grep -qE "dpkg was interrupted" "$log"; then
@@ -39,6 +43,13 @@ tx_pkg_diagnose() {
             grep -E "trying to overwrite" "$log" | head -n 3 | sed -E \
                 "s/.*trying to overwrite '([^']+)', which is also in package ([^ ]+).*/conflict: \1 (already owned by \2)/"
             grep -oE "archives/[^_]+_" "$log" | head -n 3 | sed -E 's|archives/(.*)_|new package: \1|' ;;
+        libmismatch)
+            grep -m 1 -E "cannot locate symbol" "$log"
+            if grep -qE 'symbol "(SSL_|TLS_|EVP_|ERR_|OPENSSL_)' "$log"; then
+                echo "needs a newer: openssl"
+            else
+                echo "needs a newer: libcurl"
+            fi ;;
         missing)
             grep -oE "Unable to locate package [^ ]+" "$log" | head -n 5 | sed 's/Unable to locate package /missing: /' ;;
         *)
@@ -84,6 +95,17 @@ Why: a core library was upgraded while programs using the old one were still
      running, so they can't start until Termux restarts.
 Fix: close Termux completely (swipe it away in recent apps), reopen it, run
      pkg upgrade, then run the install again.
+EOF
+        ;;
+        libmismatch) cat <<'EOF'
+Why: an earlier upgrade stopped half way, so a program (often curl or git) is
+     newer than a library it needs (often OpenSSL). It can't run until they
+     match. apt doesn't depend on curl, so it can repair this.
+Fix: dpkg --configure -a
+     apt update
+     apt install -y openssl
+     apt full-upgrade -y
+     then close Termux completely, reopen it, and run the install again.
 EOF
         ;;
         missing) cat <<'EOF'

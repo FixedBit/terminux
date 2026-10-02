@@ -17,6 +17,7 @@ Package problems it can repair safely, it repairs and retries by itself.
 | An install was interrupted | Termux was closed or Android killed it mid-install | `terminux fix packages` |
 | Couldn't reach the package server | Connection, VPN or data saver | Check your connection, or `termux-change-repo` |
 | Hash sum mismatch | The mirror is mid-update | `termux-change-repo`, pick another mirror |
+| `curl` or `git`: `cannot locate symbol "SSL_..."` | An earlier upgrade stopped half way, so curl is newer than OpenSSL | `dpkg --configure -a`, `apt update`, `apt install -y openssl`, `apt full-upgrade -y`, then reopen Termux. (apt doesn't need curl, so it still works.) |
 | `CANNOT LINK EXECUTABLE` | A core library was upgraded while Termux was running | Close Termux completely, reopen, `pkg upgrade`, run the install again |
 | Out of space | The phone is full | Free about 4 GB |
 

@@ -65,7 +65,7 @@ diag() { tx_pkg_diagnose "$FIX/$1.log"; }
 }
 
 @test "every known cause has a plain explanation and a fix" {
-    for c in overwrite interrupted broken network mirror corelib missing lock storage unknown; do
+    for c in overwrite interrupted broken network mirror corelib libmismatch missing lock storage unknown; do
         run tx_pkg_explain "$c"
         [ "$status" -eq 0 ] && [ -n "$output" ] || { echo "no explanation for $c"; return 1; }
         [[ "$output" == *"Fix:"* ]] || { echo "no fix for $c"; return 1; }
@@ -118,4 +118,13 @@ diag() { tx_pkg_diagnose "$FIX/$1.log"; }
     [ "$status" -ne 0 ]
     run grep -c "force-overwrite" "$CALLS"
     [ "$output" = 0 ]
+}
+
+@test "a library mismatch (new curl, old openssl) is told apart from a running-process problem" {
+    run diag libmismatch
+    [[ "$output" == *"cause=libmismatch"* ]]
+    [[ "$output" == *"openssl"* ]]
+    run tx_pkg_explain libmismatch
+    [[ "$output" == *"apt install -y openssl"* ]]
+    [[ "$output" == *"apt full-upgrade"* ]]
 }
