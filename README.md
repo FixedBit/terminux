@@ -6,12 +6,15 @@ want, running in Termux without root.
 
 **Build your install command with the wizard: https://fixedbit.github.io/terminux/wizard.html**
 
-Or take the defaults (XFCE, VS Code, Firefox, VLC, Python, zsh with Oh My Zsh
-and Powerlevel10k). Paste this into a fresh Termux:
+Or paste this into a fresh Termux and it asks you, step by step, right in the
+terminal (Linux, desktop, apps, tweaks, account, extras):
 
 ```sh
 curl -fsSL https://fixedbit.github.io/terminux/install.sh | bash
 ```
+
+Add `-s -- --yes` to skip the questions and take the defaults (XFCE, VS Code,
+Firefox, VLC, Python, zsh with Oh My Zsh and Powerlevel10k).
 
 Get Termux from [F-Droid](https://f-droid.org/packages/com.termux/) or
 [GitHub](https://github.com/termux/termux-app/releases), not the Play Store.
