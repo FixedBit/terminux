@@ -1,49 +1,70 @@
 {
-  "$comment": "Single source of truth for install options. Read by the wizard (site/), parsed by install.sh, enforced by tests/options.bats. See docs/adr/0005-options-schema.md.",
+  "$comment": "Single source of truth for install options. Groups are the wizard steps, in order. A \"when\" rule is a list of alternatives (any may match); each alternative maps option ids to allowed values, and \"*\" means any non-empty value. tools/sync-options.js turns this into lib/options.gen.sh for install.sh and the terminal wizard. See docs/adr/0005 and 0008.",
   "version": 1,
   "groups": [
     {
-      "id": "desktop",
-      "title": "Desktop",
+      "id": "linux",
+      "title": "Linux",
+      "intro": "Where your desktop and apps run.",
       "doc": "docs/DESKTOPS.md"
     },
     {
-      "id": "display",
-      "title": "Display and look",
-      "doc": "docs/DISPLAY.md"
+      "id": "desktop",
+      "title": "Desktop",
+      "intro": "The desktop you see in the Termux:X11 app.",
+      "doc": "docs/DESKTOPS.md"
     },
     {
-      "id": "device",
-      "title": "Device tweaks",
+      "id": "apps",
+      "title": "Apps",
+      "intro": "Only apps that work with your choices so far are shown.",
+      "doc": "docs/APPS.md"
+    },
+    {
+      "id": "tweaks",
+      "title": "Tweaks",
+      "intro": "Fixes for things phones do that PCs don't.",
       "doc": "docs/DEVICE-TWEAKS.md"
     },
     {
-      "id": "software",
-      "title": "Software",
-      "doc": "docs/APPS.md"
+      "id": "you",
+      "title": "You",
+      "intro": "Your account and shell.",
+      "doc": "docs/SHELL.md"
     },
     {
       "id": "extras",
-      "title": "AI tools and more apps",
+      "title": "Extras",
+      "intro": "AI tools, more environments and networking. All optional.",
       "doc": "docs/APPS.md"
-    },
-    {
-      "id": "envs",
-      "title": "Extra environments",
-      "doc": "docs/ENVIRONMENTS.md"
-    },
-    {
-      "id": "network",
-      "title": "Network and access",
-      "doc": "docs/NETBIRD.md"
-    },
-    {
-      "id": "account",
-      "title": "Account and shell",
-      "doc": "docs/SHELL.md"
     }
   ],
   "options": [
+    {
+      "id": "base",
+      "flag": "--base",
+      "group": "linux",
+      "type": "choice",
+      "label": "Linux",
+      "default": "termux",
+      "choices": [
+        {
+          "value": "termux",
+          "label": "Termux",
+          "help": "Runs natively in Termux. Fastest, with GPU acceleration on Adreno phones. Recommended."
+        },
+        {
+          "value": "debian",
+          "label": "Debian",
+          "help": "A full Debian under proot, for software that only exists for regular Linux. Slower, software rendering."
+        },
+        {
+          "value": "ubuntu",
+          "label": "Ubuntu",
+          "help": "A full Ubuntu under proot. Like Debian, but without Firefox or Chromium (Ubuntu ships them as snaps, which can't run here)."
+        }
+      ]
+    },
     {
       "id": "de",
       "flag": "--de",
@@ -71,21 +92,18 @@
           "value": "kde",
           "label": "KDE Plasma",
           "help": "Modern and heavy; wants 6 GB+ of RAM. Compositing is off by default."
+        },
+        {
+          "value": "none",
+          "label": "None",
+          "help": "Terminal only, no desktop. Lightest and quickest to install."
         }
       ]
     },
     {
-      "id": "wine",
-      "flag": "--wine",
-      "group": "desktop",
-      "type": "bool",
-      "label": "Windows app support (Wine + Box64, about 500 MB)",
-      "default": false
-    },
-    {
       "id": "theme",
       "flag": "--theme",
-      "group": "display",
+      "group": "desktop",
       "type": "choice",
       "label": "Theme",
       "default": "dark",
@@ -100,71 +118,43 @@
           "label": "Light",
           "help": "Adwaita widgets."
         }
+      ],
+      "when": [
+        {
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
+        }
       ]
     },
     {
-      "id": "dpi",
-      "flag": "--dpi",
-      "group": "display",
-      "type": "int",
-      "label": "Desktop DPI",
-      "help": "Leave empty for automatic: the HiDPI tweak picks one from your screen (180 on a Galaxy Fold inner screen).",
-      "min": 72,
-      "max": 320,
-      "default": null
-    },
-    {
-      "id": "tweaks",
-      "flag": "--tweaks",
-      "group": "device",
-      "type": "multi",
-      "label": "Device tweaks",
-      "help": "Each one is safe on phones it doesn't apply to, so all are on by default.",
-      "default": [
-        "wakelock",
-        "gpu-check",
-        "phantom",
-        "oneui-audio",
-        "touch",
-        "hidpi"
-      ],
-      "choices": [
+      "id": "wine",
+      "flag": "--wine",
+      "group": "desktop",
+      "type": "bool",
+      "label": "Windows app support (Wine + Box64, about 500 MB)",
+      "default": false,
+      "when": [
         {
-          "value": "wakelock",
-          "label": "Keep Termux awake",
-          "help": "Holds a wake lock while the desktop runs, so battery savers (Samsung especially) don't freeze it."
-        },
-        {
-          "value": "gpu-check",
-          "label": "GPU self-check",
-          "help": "Checks that Mesa's Turnip driver supports this GPU at every start, and falls back to software rendering instead of crashing."
-        },
-        {
-          "value": "phantom",
-          "label": "Handle Android's process killer",
-          "help": "Android 12+ kills background processes and takes the desktop with it. Lifts the limit through root or Shizuku if available, otherwise shows the one setting to change."
-        },
-        {
-          "value": "oneui-audio",
-          "label": "Samsung One UI audio fix",
-          "help": "Preloads libskcodec so PulseAudio works on One UI. Skipped on phones without that library."
-        },
-        {
-          "value": "touch",
-          "label": "Touch-friendly windows",
-          "help": "Bigger window borders on XFCE so you can grab them with a finger."
-        },
-        {
-          "value": "hidpi",
-          "label": "Automatic HiDPI",
-          "help": "Picks a readable DPI for high-density screens such as the Galaxy Fold's, when you haven't set one."
+          "base": [
+            "termux"
+          ],
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
         }
       ]
     },
     {
       "id": "apps",
       "flag": "--apps",
-      "group": "software",
+      "group": "apps",
       "type": "multi",
       "label": "Applications",
       "default": [
@@ -177,32 +167,100 @@
         {
           "value": "vscode",
           "label": "VS Code (Code - OSS)",
-          "help": "Native Termux build with Open VSX extensions."
+          "help": "Code - OSS on Termux; Microsoft's own build on Debian and Ubuntu.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "firefox",
           "label": "Firefox",
-          "help": "Web browser."
+          "help": "Web browser.",
+          "when": [
+            {
+              "base": [
+                "termux",
+                "debian"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "chromium",
           "label": "Chromium",
-          "help": "Web browser."
+          "help": "Web browser.",
+          "when": [
+            {
+              "base": [
+                "termux",
+                "debian"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "vlc",
           "label": "VLC",
-          "help": "Media player."
+          "help": "Media player.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "gimp",
           "label": "GIMP",
-          "help": "Image editor."
+          "help": "Image editor.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "libreoffice",
           "label": "LibreOffice",
-          "help": "Office suite (large)."
+          "help": "Office suite (large).",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
           "value": "python",
@@ -224,42 +282,228 @@
     {
       "id": "packages",
       "flag": "--packages",
-      "group": "software",
+      "group": "apps",
       "type": "list",
-      "label": "Extra Termux packages",
-      "help": "Comma-separated package names from pkg, e.g. htop,neovim,tmux.",
+      "label": "Extra packages",
+      "help": "Comma-separated names from your Linux's package manager (pkg on Termux, apt on Debian and Ubuntu), e.g. htop,neovim,tmux.",
       "pattern": "^[a-z0-9][a-z0-9+._-]*$",
       "default": []
     },
     {
-      "id": "with",
-      "flag": "--with",
-      "group": "software",
+      "id": "tweaks",
+      "flag": "--tweaks",
+      "group": "tweaks",
       "type": "multi",
-      "label": "Extras",
-      "default": [],
+      "label": "Device tweaks",
+      "help": "Each one is safe on phones it doesn't apply to, so all are on by default.",
+      "default": [
+        "wakelock",
+        "gpu-check",
+        "phantom",
+        "oneui-audio",
+        "touch",
+        "hidpi"
+      ],
       "choices": [
         {
-          "value": "debian",
-          "label": "Debian environment",
-          "help": "A full Debian (proot) with your user account and sudo, for software that only exists for regular Linux. Enter it with terminux debian. About 1 GB."
+          "value": "wakelock",
+          "label": "Keep Termux awake",
+          "help": "Holds a wake lock while the desktop runs, so battery savers (Samsung especially) don't freeze it."
         },
         {
-          "value": "vscode-ms",
-          "label": "Microsoft VS Code (in Debian proot)",
-          "help": "The official build with the Microsoft extension marketplace. Includes the Debian environment."
+          "value": "gpu-check",
+          "label": "GPU self-check",
+          "help": "Checks that Mesa's Turnip driver supports this GPU at every start, and falls back to software rendering instead of crashing.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         },
         {
-          "value": "cursor",
-          "label": "Cursor CLI (in Debian proot)",
-          "help": "Cursor's agent CLI needs glibc, so it runs in the Debian proot."
+          "value": "phantom",
+          "label": "Handle Android's process killer",
+          "help": "Android 12+ kills background processes and takes the desktop with it. Lifts the limit through root or Shizuku if available, otherwise shows the one setting to change."
         },
         {
-          "value": "netbird",
-          "label": "NetBird mesh",
-          "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page."
+          "value": "oneui-audio",
+          "label": "Samsung One UI audio fix",
+          "help": "Preloads libskcodec so PulseAudio works on One UI. Skipped on phones without that library.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "touch",
+          "label": "Touch-friendly windows",
+          "help": "Bigger window borders on XFCE so you can grab them with a finger.",
+          "when": [
+            {
+              "de": [
+                "xfce"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "hidpi",
+          "label": "Automatic HiDPI",
+          "help": "Picks a readable DPI for high-density screens such as the Galaxy Fold's, when you haven't set one.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
         }
       ]
+    },
+    {
+      "id": "dpi",
+      "flag": "--dpi",
+      "group": "tweaks",
+      "type": "int",
+      "label": "Desktop DPI",
+      "help": "Leave empty for automatic: the HiDPI tweak picks one from your screen (180 on a Galaxy Fold inner screen).",
+      "min": 72,
+      "max": 320,
+      "default": null,
+      "when": [
+        {
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "user",
+      "flag": "--user",
+      "group": "you",
+      "type": "text",
+      "label": "Linux username",
+      "help": "Your account inside the Debian environment (with sudo). Lowercase letters, digits, - and _.",
+      "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+      "example": "jason",
+      "default": "user",
+      "when": [
+        {
+          "base": [
+            "debian",
+            "ubuntu"
+          ]
+        },
+        {
+          "with": [
+            "debian",
+            "vscode-ms",
+            "cursor"
+          ]
+        },
+        {
+          "envs": "*"
+        },
+        {
+          "add": [
+            "aider",
+            "cursor-agent"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "flag": "--shell",
+      "group": "you",
+      "type": "choice",
+      "label": "Shell",
+      "default": "zsh",
+      "choices": [
+        {
+          "value": "zsh",
+          "label": "zsh",
+          "help": "With the extras below. Used in Termux and in Debian."
+        },
+        {
+          "value": "bash",
+          "label": "bash",
+          "help": "Termux's default."
+        }
+      ]
+    },
+    {
+      "id": "zsh",
+      "flag": "--zsh",
+      "group": "you",
+      "type": "multi",
+      "label": "zsh extras",
+      "help": "Only used with the zsh shell.",
+      "default": [
+        "ohmyzsh",
+        "powerlevel10k",
+        "autosuggestions",
+        "syntax-highlighting"
+      ],
+      "choices": [
+        {
+          "value": "ohmyzsh",
+          "label": "Oh My Zsh",
+          "help": "Framework for zsh themes and plugins."
+        },
+        {
+          "value": "powerlevel10k",
+          "label": "Powerlevel10k",
+          "help": "Fast, informative prompt. Run p10k configure to style it."
+        },
+        {
+          "value": "autosuggestions",
+          "label": "Autosuggestions",
+          "help": "Suggests commands from your history as you type."
+        },
+        {
+          "value": "syntax-highlighting",
+          "label": "Syntax highlighting",
+          "help": "Colours commands as you type, red if they don't exist."
+        }
+      ],
+      "when": [
+        {
+          "shell": [
+            "zsh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "banner",
+      "flag": "--banner",
+      "group": "you",
+      "type": "bool",
+      "label": "Show the terminux banner when Termux opens",
+      "help": "Status and the main commands, every time you open Termux.",
+      "default": true
     },
     {
       "id": "add",
@@ -480,9 +724,53 @@
       ]
     },
     {
+      "id": "with",
+      "flag": "--with",
+      "group": "extras",
+      "type": "multi",
+      "label": "Extra environments and tools",
+      "default": [],
+      "choices": [
+        {
+          "value": "debian",
+          "label": "Debian environment",
+          "help": "A full Debian (proot) with your user account and sudo, for software that only exists for regular Linux. Enter it with terminux debian. About 1 GB.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "vscode-ms",
+          "label": "Microsoft VS Code (in Debian proot)",
+          "help": "The official build with the Microsoft extension marketplace. Includes the Debian environment.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "cursor",
+          "label": "Cursor CLI (in Debian proot)",
+          "help": "Cursor's agent CLI needs glibc, so it runs in the Debian proot."
+        },
+        {
+          "value": "netbird",
+          "label": "NetBird mesh",
+          "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page."
+        }
+      ]
+    },
+    {
       "id": "envs",
       "flag": "--envs",
-      "group": "envs",
+      "group": "extras",
       "type": "multi",
       "label": "Environments to create",
       "help": "Each becomes a proot environment named after its profile. Make more later with: terminux env create",
@@ -518,86 +806,10 @@
     {
       "id": "ssh",
       "flag": "--ssh",
-      "group": "network",
+      "group": "extras",
       "type": "bool",
       "label": "Start the SSH server on login (port 8022)",
       "default": false
-    },
-    {
-      "id": "user",
-      "flag": "--user",
-      "group": "account",
-      "type": "text",
-      "label": "Linux username",
-      "help": "Your account inside the Debian environment (with sudo). Lowercase letters, digits, - and _.",
-      "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
-      "example": "jason",
-      "default": "user"
-    },
-    {
-      "id": "shell",
-      "flag": "--shell",
-      "group": "account",
-      "type": "choice",
-      "label": "Shell",
-      "default": "zsh",
-      "choices": [
-        {
-          "value": "zsh",
-          "label": "zsh",
-          "help": "With the extras below. Used in Termux and in Debian."
-        },
-        {
-          "value": "bash",
-          "label": "bash",
-          "help": "Termux's default."
-        }
-      ]
-    },
-    {
-      "id": "zsh",
-      "flag": "--zsh",
-      "group": "account",
-      "type": "multi",
-      "label": "zsh extras",
-      "help": "Only used with the zsh shell.",
-      "default": [
-        "ohmyzsh",
-        "powerlevel10k",
-        "autosuggestions",
-        "syntax-highlighting"
-      ],
-      "choices": [
-        {
-          "value": "ohmyzsh",
-          "label": "Oh My Zsh",
-          "help": "Framework for zsh themes and plugins."
-        },
-        {
-          "value": "powerlevel10k",
-          "label": "Powerlevel10k",
-          "help": "Fast, informative prompt. Run p10k configure to style it."
-        },
-        {
-          "value": "autosuggestions",
-          "label": "Autosuggestions",
-          "help": "Suggests commands from your history as you type."
-        },
-        {
-          "value": "syntax-highlighting",
-          "label": "Syntax highlighting",
-          "help": "Colours commands as you type, red if they don't exist."
-        }
-      ]
-    },
-    {
-      "id": "banner",
-      "flag": "--banner",
-      "group": "account",
-      "type": "bool",
-      "label": "Show the terminux banner when Termux opens",
-      "help": "Status and the main commands, every time you open Termux.",
-      "default": true
     }
   ]
 }

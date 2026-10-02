@@ -6,17 +6,23 @@ load helpers
 
 setup() { tx_sandbox; }
 
-# Print "flag<TAB>type<TAB>value" for every value the wizard can produce.
+# One line per value the wizard can produce: "<key>	<expected plan value>	<args...>",
+# where args also set whatever that value's rules need (command.js exampleArgs).
 wizard_values() {
     node -e '
-        const o = require(process.argv[1]);
-        for (const opt of o.options) {
-            if (opt.type === "choice" || opt.type === "multi")
-                for (const c of opt.choices) console.log([opt.flag, opt.type, c.value].join("\t"));
-            else if (opt.type === "bool") console.log([opt.flag, "bool", ""].join("\t"));
-            else if (opt.type === "int") console.log([opt.flag, "int", opt.min].join("\t"));
-            else if (opt.type === "list") console.log([opt.flag, "list", "htop"].join("\t"));
-        }' "$REPO_ROOT/options.json"
+        const C = require(process.argv[1]); const s = require(process.argv[2]);
+        for (const o of s.options) {
+            let vals;
+            if (o.type === "choice" || o.type === "multi") vals = o.choices.map(c => c.value);
+            else if (o.type === "bool") vals = [!o.default];
+            else if (o.type === "int") vals = [o.min];
+            else if (o.type === "list") vals = ["htop"];
+            else if (o.type === "text") vals = [o.example];
+            for (const v of vals) {
+                const want = o.type === "bool" ? (v ? "yes" : "no") : String(v);
+                console.log([o.id, want, ...C.exampleArgs(s, o.id, v)].join("	"));
+            }
+        }' "$REPO_ROOT/site/assets/command.js" "$REPO_ROOT/options.json"
 }
 
 @test "options.json is valid and every option has a flag, type and label" {
@@ -37,22 +43,11 @@ wizard_values() {
 }
 
 @test "install.sh accepts every value the wizard can emit and plans it" {
-    while IFS=$'\t' read -r flag type value; do
-        key="${flag#--}"
-        if [ "$type" = bool-off ]; then
-            key="${key#no-}"
-            run bash "$REPO_ROOT/install.sh" --dry-run "$flag"
-            [ "$status" -eq 0 ] || { echo "$flag rejected: $output"; return 1; }
-            grep -qx "$key=no" <<<"$output" || { echo "$flag not in plan: $output"; return 1; }
-        elif [ "$type" = bool ]; then
-            run bash "$REPO_ROOT/install.sh" --dry-run "$flag"
-            [ "$status" -eq 0 ] || { echo "$flag rejected: $output"; return 1; }
-            grep -qx "$key=yes" <<<"$output" || { echo "$flag not in plan: $output"; return 1; }
-        else
-            run bash "$REPO_ROOT/install.sh" --dry-run "$flag" "$value"
-            [ "$status" -eq 0 ] || { echo "$flag $value rejected: $output"; return 1; }
-            grep -qE "^$key=(.*,)?$value(,.*)?$" <<<"$output" || { echo "$flag $value not in plan: $output"; return 1; }
-        fi
+    while IFS=$'	' read -r key want rest; do
+        IFS=$'	' read -ra args <<<"$rest"
+        run bash "$REPO_ROOT/install.sh" --dry-run "${args[@]}"
+        [ "$status" -eq 0 ] || { echo "rejected: ${args[*]}: $output"; return 1; }
+        grep -qE "^$key=(.*,)?$want(,.*)?$" <<<"$output" || { echo "${args[*]}: $key=$want not in plan: $output"; return 1; }
     done < <(wizard_values)
 }
 
@@ -63,19 +58,19 @@ wizard_values() {
     done
 }
 
-@test "the installer's defaults match options.json" {
-    run bash "$REPO_ROOT/install.sh" --dry-run
-    [ "$status" -eq 0 ]
-    expected=$(node -e '
-        for (const o of require(process.argv[1]).options) {
-            const k = o.flag.slice(2);
-            let v = o.default;
-            if (o.type === "bool") v = v ? "yes" : "no";
-            else if (Array.isArray(v)) v = v.join(",");
-            else if (v === null) v = "auto";
-            console.log(k + "=" + v);
-        }' "$REPO_ROOT/options.json")
-    while read -r line; do
-        grep -qxF "$line" <<<"$output" || { echo "plan lacks default: $line"; echo "$output"; return 1; }
-    done <<<"$expected"
+@test "install.sh and the web wizard agree on every Linux and desktop combination" {
+    cases=$(node -e '
+        const s = require(process.argv[1]);
+        const bases = s.options.find(o => o.id === "base").choices.map(c => c.value);
+        const des = s.options.find(o => o.id === "de").choices.map(c => c.value);
+        for (const b of bases) for (const d of des) console.log(b + " " + d);' "$REPO_ROOT/options.json")
+    while read -r b d; do
+        want=$(node -e '
+            const C = require(process.argv[1]); const s = require(process.argv[2]);
+            const st = C.defaultState(s); st.base = process.argv[3]; st.de = process.argv[4];
+            process.stdout.write(C.planLines(s, C.applyRules(s, st)).join("\n"));' \
+            "$REPO_ROOT/site/assets/command.js" "$REPO_ROOT/options.json" "$b" "$d")
+        got=$(bash "$REPO_ROOT/install.sh" --dry-run --base "$b" --de "$d")
+        [ "$want" = "$got" ] || { echo "== $b $d"; diff <(echo "$want") <(echo "$got"); return 1; }
+    done <<<"$cases"
 }

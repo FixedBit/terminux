@@ -50,6 +50,7 @@ Usage: bash install.sh [options]
 Options (build them visually at https://fixedbit.github.io/terminux/):
 $(tx_opt_help)
 
+  --yes          install with these options without asking (the web wizard adds this)
   --private SRC  load private values (NetBird key, ...) from a file or https link
   --dry-run      print the plan and exit
   -h, --help     this help
@@ -59,12 +60,14 @@ EOF
 }
 
 DRY_RUN=0
+ASSUME_YES=0
 tx_opt_defaults
 while [ $# -gt 0 ]; do
     arg="$1"; shift
     case "$arg" in
         -h|--help) usage; exit 0 ;;
         --dry-run) DRY_RUN=1; continue ;;
+        --yes|-y) ASSUME_YES=1; continue ;;
         --private=*) TX_PRIVATE_SRC="${arg#*=}"; continue ;;
         --private) TX_PRIVATE_SRC="${1:-}"; shift; continue ;;
         --*=*) key="${arg%%=*}"; key="${key#--}"; value="${arg#*=}" ;;
@@ -86,6 +89,17 @@ while [ $# -gt 0 ]; do
     esac
     tx_opt_set "$key" "$value" || exit 2
 done
+
+# No options and someone at the keyboard: walk them through it. Commands
+# from the web wizard always carry options (at least --yes), so they don't.
+if [ ${#TX_SET[@]} -eq 0 ] && [ "$ASSUME_YES" = 0 ] \
+    && { [ -t 0 ] || [ "${TERMINUX_TTY:-0}" = 1 ]; }; then
+    # shellcheck source=lib/tui.sh
+    . "$TX_LIB/tui.sh"
+    tx_tui_run || exit 0
+fi
+
+tx_opt_apply_rules || exit 2
 
 if [ "$DRY_RUN" = 1 ]; then
     tx_opt_print_plan

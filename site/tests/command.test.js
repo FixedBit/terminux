@@ -7,28 +7,29 @@ const path = require("path");
 const { buildCommand, defaultState, PRESETS, INSTALL_URL } = require("../assets/command.js");
 const options = require(path.join(__dirname, "../../options.json"));
 
-const base = `curl -fsSL ${INSTALL_URL} | bash`;
+const base = `curl -fsSL ${INSTALL_URL} | bash -s --`;
+const cmd = (...flags) => `${base} ${flags.concat("--yes").join(" ")}`;
 
 test("defaults produce the bare command", () => {
-  assert.strictEqual(buildCommand(options, defaultState(options)), base);
+  assert.strictEqual(buildCommand(options, defaultState(options)), cmd());
 });
 
 test("a changed choice becomes a flag", () => {
   const s = defaultState(options);
   s.de = "kde";
-  assert.strictEqual(buildCommand(options, s), `${base} -s -- --de kde`);
+  assert.strictEqual(buildCommand(options, s), cmd("--de", "kde"));
 });
 
 test("multi options join with commas, in the order the schema lists them", () => {
   const s = defaultState(options);
   s.add = ["ollama", "claude-code"];
-  assert.match(buildCommand(options, s), /--add claude-code,ollama$/);
+  assert.match(buildCommand(options, s), /--add claude-code,ollama --yes$/);
 });
 
 test("emptying a multi option that has defaults says none", () => {
   const s = defaultState(options);
   s.tweaks = [];
-  assert.match(buildCommand(options, s), /--tweaks none$/);
+  assert.match(buildCommand(options, s), /--tweaks none --yes$/);
 });
 
 test("bool flags: on adds the flag, turning off an on-by-default one adds --no-", () => {
@@ -43,24 +44,26 @@ test("bool flags: on adds the flag, turning off an on-by-default one adds --no-"
 test("empty number means automatic and is left out", () => {
   const s = defaultState(options);
   s.dpi = "";
-  assert.strictEqual(buildCommand(options, s), base);
+  assert.strictEqual(buildCommand(options, s), cmd());
   s.dpi = "180";
-  assert.match(buildCommand(options, s), /--dpi 180$/);
+  assert.match(buildCommand(options, s), /--dpi 180 --yes$/);
 });
 
 test("invalid values are left out rather than producing a broken command", () => {
   const s = defaultState(options);
+  s.base = "debian";
   s.user = "Bad User; rm -rf ~";
   s.packages = "htop,$(reboot)";
   s.dpi = "9999";
-  assert.strictEqual(buildCommand(options, s), base);
+  assert.strictEqual(buildCommand(options, s), cmd("--base", "debian"));
 });
 
 test("valid username and packages are included", () => {
   const s = defaultState(options);
+  s.base = "debian";
   s.user = "jason";
   s.packages = "htop, neovim";
-  assert.strictEqual(buildCommand(options, s), `${base} -s -- --packages htop,neovim --user jason`);
+  assert.strictEqual(buildCommand(options, s), cmd("--base", "debian", "--packages", "htop,neovim", "--user", "jason"));
 });
 
 test("every preset only uses values the schema allows", () => {

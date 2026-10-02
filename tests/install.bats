@@ -76,10 +76,10 @@ setup() { tx_sandbox; }
 
 @test "--user must be a valid Linux username" {
     for bad in "Jason" "root user" "1abc" "a;b" "root"; do
-        run bash "$INSTALL" --dry-run --user "$bad"
+        run bash "$INSTALL" --dry-run --base debian --user "$bad"
         [ "$status" -eq 2 ] || { echo "accepted bad user: $bad"; return 1; }
     done
-    run bash "$INSTALL" --dry-run --user jason
+    run bash "$INSTALL" --dry-run --base debian --user jason
     [ "$status" -eq 0 ]
     grep -qx "user=jason" <<<"$output"
 }
