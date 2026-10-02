@@ -1,0 +1,815 @@
+{
+  "$comment": "Single source of truth for install options. Groups are the wizard steps, in order. A \"when\" rule is a list of alternatives (any may match); each alternative maps option ids to allowed values, and \"*\" means any non-empty value. tools/sync-options.js turns this into lib/options.gen.sh for install.sh and the terminal wizard. See docs/adr/0005 and 0008.",
+  "version": 1,
+  "groups": [
+    {
+      "id": "linux",
+      "title": "Linux",
+      "intro": "Where your desktop and apps run.",
+      "doc": "docs/DESKTOPS.md"
+    },
+    {
+      "id": "desktop",
+      "title": "Desktop",
+      "intro": "The desktop you see in the Termux:X11 app.",
+      "doc": "docs/DESKTOPS.md"
+    },
+    {
+      "id": "apps",
+      "title": "Apps",
+      "intro": "Only apps that work with your choices so far are shown.",
+      "doc": "docs/APPS.md"
+    },
+    {
+      "id": "tweaks",
+      "title": "Tweaks",
+      "intro": "Fixes for things phones do that PCs don't.",
+      "doc": "docs/DEVICE-TWEAKS.md"
+    },
+    {
+      "id": "you",
+      "title": "You",
+      "intro": "Your account and shell.",
+      "doc": "docs/SHELL.md"
+    },
+    {
+      "id": "extras",
+      "title": "Extras",
+      "intro": "AI tools, more environments and networking. All optional.",
+      "doc": "docs/APPS.md"
+    }
+  ],
+  "options": [
+    {
+      "id": "base",
+      "flag": "--base",
+      "group": "linux",
+      "type": "choice",
+      "label": "Linux",
+      "default": "termux",
+      "choices": [
+        {
+          "value": "termux",
+          "label": "Termux",
+          "help": "Runs natively in Termux. Fastest, with GPU acceleration on Adreno phones. Recommended."
+        },
+        {
+          "value": "debian",
+          "label": "Debian",
+          "help": "A full Debian under proot, for software that only exists for regular Linux. Slower, software rendering."
+        },
+        {
+          "value": "ubuntu",
+          "label": "Ubuntu",
+          "help": "A full Ubuntu under proot. Like Debian, but without Firefox or Chromium (Ubuntu ships them as snaps, which can't run here)."
+        }
+      ]
+    },
+    {
+      "id": "de",
+      "flag": "--de",
+      "group": "desktop",
+      "type": "choice",
+      "label": "Desktop environment",
+      "default": "xfce",
+      "choices": [
+        {
+          "value": "xfce",
+          "label": "XFCE",
+          "help": "Fast and customizable. Recommended, and the best fit for touch and the Fold."
+        },
+        {
+          "value": "lxqt",
+          "label": "LXQt",
+          "help": "The lightest option, for phones with little RAM."
+        },
+        {
+          "value": "mate",
+          "label": "MATE",
+          "help": "Classic two-panel layout, moderate resource use."
+        },
+        {
+          "value": "kde",
+          "label": "KDE Plasma",
+          "help": "Modern and heavy; wants 6 GB+ of RAM. Compositing is off by default."
+        },
+        {
+          "value": "none",
+          "label": "None",
+          "help": "Terminal only, no desktop. Lightest and quickest to install."
+        }
+      ]
+    },
+    {
+      "id": "theme",
+      "flag": "--theme",
+      "group": "desktop",
+      "type": "choice",
+      "label": "Theme",
+      "default": "dark",
+      "choices": [
+        {
+          "value": "dark",
+          "label": "Dark",
+          "help": "Adwaita-dark widgets and a dark panel."
+        },
+        {
+          "value": "light",
+          "label": "Light",
+          "help": "Adwaita widgets."
+        }
+      ],
+      "when": [
+        {
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "wine",
+      "flag": "--wine",
+      "group": "desktop",
+      "type": "bool",
+      "label": "Windows app support (Wine + Box64, about 500 MB)",
+      "default": false,
+      "when": [
+        {
+          "base": [
+            "termux"
+          ],
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "apps",
+      "flag": "--apps",
+      "group": "apps",
+      "type": "multi",
+      "label": "Applications",
+      "default": [
+        "vscode",
+        "firefox",
+        "vlc",
+        "python"
+      ],
+      "choices": [
+        {
+          "value": "vscode",
+          "label": "VS Code (Code - OSS)",
+          "help": "Code - OSS on Termux; Microsoft's own build on Debian and Ubuntu.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "firefox",
+          "label": "Firefox",
+          "help": "Web browser.",
+          "when": [
+            {
+              "base": [
+                "termux",
+                "debian"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "chromium",
+          "label": "Chromium",
+          "help": "Web browser.",
+          "when": [
+            {
+              "base": [
+                "termux",
+                "debian"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "vlc",
+          "label": "VLC",
+          "help": "Media player.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "gimp",
+          "label": "GIMP",
+          "help": "Image editor.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "libreoffice",
+          "label": "LibreOffice",
+          "help": "Office suite (large).",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "python",
+          "label": "Python 3 + pip",
+          "help": "Python toolchain."
+        },
+        {
+          "value": "nodejs",
+          "label": "Node.js",
+          "help": "JavaScript runtime and npm."
+        },
+        {
+          "value": "build",
+          "label": "Build tools",
+          "help": "clang, make, cmake, pkg-config."
+        }
+      ]
+    },
+    {
+      "id": "packages",
+      "flag": "--packages",
+      "group": "apps",
+      "type": "list",
+      "label": "Extra packages",
+      "help": "Comma-separated names from your Linux's package manager (pkg on Termux, apt on Debian and Ubuntu), e.g. htop,neovim,tmux.",
+      "pattern": "^[a-z0-9][a-z0-9+._-]*$",
+      "default": []
+    },
+    {
+      "id": "tweaks",
+      "flag": "--tweaks",
+      "group": "tweaks",
+      "type": "multi",
+      "label": "Device tweaks",
+      "help": "Each one is safe on phones it doesn't apply to, so all are on by default.",
+      "default": [
+        "wakelock",
+        "gpu-check",
+        "phantom",
+        "oneui-audio",
+        "touch",
+        "hidpi"
+      ],
+      "choices": [
+        {
+          "value": "wakelock",
+          "label": "Keep Termux awake",
+          "help": "Holds a wake lock while the desktop runs, so battery savers (Samsung especially) don't freeze it."
+        },
+        {
+          "value": "gpu-check",
+          "label": "GPU self-check",
+          "help": "Checks that Mesa's Turnip driver supports this GPU at every start, and falls back to software rendering instead of crashing.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ],
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "phantom",
+          "label": "Handle Android's process killer",
+          "help": "Android 12+ kills background processes and takes the desktop with it. Lifts the limit through root or Shizuku if available, otherwise shows the one setting to change."
+        },
+        {
+          "value": "oneui-audio",
+          "label": "Samsung One UI audio fix",
+          "help": "Preloads libskcodec so PulseAudio works on One UI. Skipped on phones without that library.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "touch",
+          "label": "Touch-friendly windows",
+          "help": "Bigger window borders on XFCE so you can grab them with a finger.",
+          "when": [
+            {
+              "de": [
+                "xfce"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "hidpi",
+          "label": "Automatic HiDPI",
+          "help": "Picks a readable DPI for high-density screens such as the Galaxy Fold's, when you haven't set one.",
+          "when": [
+            {
+              "de": [
+                "xfce",
+                "lxqt",
+                "mate",
+                "kde"
+              ]
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "dpi",
+      "flag": "--dpi",
+      "group": "tweaks",
+      "type": "int",
+      "label": "Desktop DPI",
+      "help": "Leave empty for automatic: the HiDPI tweak picks one from your screen (180 on a Galaxy Fold inner screen).",
+      "min": 72,
+      "max": 320,
+      "default": null,
+      "when": [
+        {
+          "de": [
+            "xfce",
+            "lxqt",
+            "mate",
+            "kde"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "user",
+      "flag": "--user",
+      "group": "you",
+      "type": "text",
+      "label": "Linux username",
+      "help": "Your account inside the Debian environment (with sudo). Lowercase letters, digits, - and _.",
+      "pattern": "^[a-z_][a-z0-9_-]{0,31}$",
+      "example": "jason",
+      "default": "user",
+      "when": [
+        {
+          "base": [
+            "debian",
+            "ubuntu"
+          ]
+        },
+        {
+          "with": [
+            "debian",
+            "vscode-ms",
+            "cursor"
+          ]
+        },
+        {
+          "envs": "*"
+        },
+        {
+          "add": [
+            "aider",
+            "cursor-agent"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "shell",
+      "flag": "--shell",
+      "group": "you",
+      "type": "choice",
+      "label": "Shell",
+      "default": "zsh",
+      "choices": [
+        {
+          "value": "zsh",
+          "label": "zsh",
+          "help": "With the extras below. Used in Termux and in Debian."
+        },
+        {
+          "value": "bash",
+          "label": "bash",
+          "help": "Termux's default."
+        }
+      ]
+    },
+    {
+      "id": "zsh",
+      "flag": "--zsh",
+      "group": "you",
+      "type": "multi",
+      "label": "zsh extras",
+      "help": "Only used with the zsh shell.",
+      "default": [
+        "ohmyzsh",
+        "powerlevel10k",
+        "autosuggestions",
+        "syntax-highlighting"
+      ],
+      "choices": [
+        {
+          "value": "ohmyzsh",
+          "label": "Oh My Zsh",
+          "help": "Framework for zsh themes and plugins."
+        },
+        {
+          "value": "powerlevel10k",
+          "label": "Powerlevel10k",
+          "help": "Fast, informative prompt. Run p10k configure to style it."
+        },
+        {
+          "value": "autosuggestions",
+          "label": "Autosuggestions",
+          "help": "Suggests commands from your history as you type."
+        },
+        {
+          "value": "syntax-highlighting",
+          "label": "Syntax highlighting",
+          "help": "Colours commands as you type, red if they don't exist."
+        }
+      ],
+      "when": [
+        {
+          "shell": [
+            "zsh"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "banner",
+      "flag": "--banner",
+      "group": "you",
+      "type": "bool",
+      "label": "Show the terminux banner when Termux opens",
+      "help": "Status and the main commands, every time you open Termux.",
+      "default": true
+    },
+    {
+      "id": "add",
+      "flag": "--add",
+      "group": "extras",
+      "type": "multi",
+      "label": "Apps from the catalog",
+      "help": "Anything here can also be added later with: terminux add",
+      "default": [],
+      "categories": [
+        {
+          "id": "ai",
+          "title": "AI tools"
+        },
+        {
+          "id": "dev",
+          "title": "Development"
+        },
+        {
+          "id": "media",
+          "title": "Media"
+        },
+        {
+          "id": "net",
+          "title": "Network and sync"
+        }
+      ],
+      "choices": [
+        {
+          "value": "claude-code",
+          "label": "Claude Code",
+          "help": "Anthropic's coding agent for the terminal. Run: claude",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "codex",
+          "label": "OpenAI Codex CLI",
+          "help": "OpenAI's coding agent for the terminal. Run: codex",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "gemini-cli",
+          "label": "Gemini CLI",
+          "help": "Google's Gemini agent for the terminal. Run: gemini",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "opencode",
+          "label": "OpenCode",
+          "help": "Open-source terminal coding agent that works with many model providers. Run: opencode",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "graperoot",
+          "label": "GrapeRoot (Dual-Graph)",
+          "help": "Graph-based context engine (MCP) that gives Claude Code, Codex, Gemini and others the right files with fewer tokens. Run: graperoot",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "aider",
+          "label": "Aider",
+          "help": "AI pair programming in your git repos. Installed in the Debian environment. Run: terminux debian -- aider",
+          "category": "ai",
+          "target": "env"
+        },
+        {
+          "value": "cursor-agent",
+          "label": "Cursor CLI",
+          "help": "Cursor's agent CLI, in the Debian environment. Run: cursor-agent",
+          "category": "ai",
+          "target": "env"
+        },
+        {
+          "value": "ollama",
+          "label": "Ollama",
+          "help": "Run local models on the phone: ollama serve, then e.g. ollama run llama3.2:1b",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "llama-cpp",
+          "label": "llama.cpp",
+          "help": "Lightweight local inference for GGUF models (llama-cli, llama-server).",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "vscode-ai",
+          "label": "AI extensions for VS Code",
+          "help": "Continue and Cline from Open VSX, for the native VS Code (code-oss).",
+          "category": "ai",
+          "target": "termux"
+        },
+        {
+          "value": "cli-essentials",
+          "label": "CLI essentials",
+          "help": "fzf, ripgrep, fd, bat, eza, jq and htop.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "neovim",
+          "label": "Neovim",
+          "help": "The modal editor. Run: nvim",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "tmux",
+          "label": "tmux",
+          "help": "Terminal multiplexer: keep sessions running, split panes.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "gh",
+          "label": "GitHub CLI",
+          "help": "Pull requests, issues and auth from the terminal. Run: gh auth login",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "lazygit",
+          "label": "lazygit",
+          "help": "A friendly terminal UI for git.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "golang",
+          "label": "Go",
+          "help": "The Go toolchain.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "rust",
+          "label": "Rust",
+          "help": "rustc and cargo.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "java",
+          "label": "Java (OpenJDK 21)",
+          "help": "JDK for Java and Kotlin tooling.",
+          "category": "dev",
+          "target": "termux"
+        },
+        {
+          "value": "ffmpeg",
+          "label": "FFmpeg",
+          "help": "Convert and edit audio and video from the terminal.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "yt-dlp",
+          "label": "yt-dlp",
+          "help": "Download video and audio from sites you have rights to.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "mpv",
+          "label": "mpv",
+          "help": "Lightweight video player for the desktop.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "inkscape",
+          "label": "Inkscape",
+          "help": "Vector graphics editor.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "audacity",
+          "label": "Audacity",
+          "help": "Audio editor.",
+          "category": "media",
+          "target": "termux"
+        },
+        {
+          "value": "netbird",
+          "label": "NetBird mesh",
+          "help": "Join a NetBird network without root. Asks for the setup key.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "rclone",
+          "label": "rclone",
+          "help": "Sync files with Google Drive, Dropbox, S3 and more.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "syncthing",
+          "label": "Syncthing",
+          "help": "Peer-to-peer folder sync between your devices.",
+          "category": "net",
+          "target": "termux"
+        },
+        {
+          "value": "openssh-server",
+          "label": "SSH server",
+          "help": "Start sshd (port 8022) whenever Termux opens.",
+          "category": "net",
+          "target": "termux"
+        }
+      ]
+    },
+    {
+      "id": "with",
+      "flag": "--with",
+      "group": "extras",
+      "type": "multi",
+      "label": "Extra environments and tools",
+      "default": [],
+      "choices": [
+        {
+          "value": "debian",
+          "label": "Debian environment",
+          "help": "A full Debian (proot) with your user account and sudo, for software that only exists for regular Linux. Enter it with terminux debian. About 1 GB.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "vscode-ms",
+          "label": "Microsoft VS Code (in Debian proot)",
+          "help": "The official build with the Microsoft extension marketplace. Includes the Debian environment.",
+          "when": [
+            {
+              "base": [
+                "termux"
+              ]
+            }
+          ]
+        },
+        {
+          "value": "cursor",
+          "label": "Cursor CLI (in Debian proot)",
+          "help": "Cursor's agent CLI needs glibc, so it runs in the Debian proot."
+        },
+        {
+          "value": "netbird",
+          "label": "NetBird mesh",
+          "help": "Join a NetBird network without root. The setup key is asked for on the phone, never in this page."
+        }
+      ]
+    },
+    {
+      "id": "envs",
+      "flag": "--envs",
+      "group": "extras",
+      "type": "multi",
+      "label": "Environments to create",
+      "help": "Each becomes a proot environment named after its profile. Make more later with: terminux env create",
+      "default": [],
+      "choices": [
+        {
+          "value": "desktop",
+          "label": "desktop",
+          "help": "Debian with an XFCE desktop and Firefox, for the Termux:X11 display"
+        },
+        {
+          "value": "dev",
+          "label": "dev",
+          "help": "Debian with build tools, git, Python, Node.js and Go"
+        },
+        {
+          "value": "gaming",
+          "label": "gaming",
+          "help": "Debian with RetroArch, DOSBox and ScummVM"
+        },
+        {
+          "value": "minimal",
+          "label": "minimal",
+          "help": "Alpine Linux with just a shell, curl and git (about 20 MB)"
+        },
+        {
+          "value": "security",
+          "label": "security",
+          "help": "Kali Linux (official image) with its standard command-line toolset, for authorized security testing"
+        }
+      ]
+    },
+    {
+      "id": "ssh",
+      "flag": "--ssh",
+      "group": "extras",
+      "type": "bool",
+      "label": "Start the SSH server on login (port 8022)",
+      "default": false
+    }
+  ]
+}
